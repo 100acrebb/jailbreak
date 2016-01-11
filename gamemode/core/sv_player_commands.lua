@@ -31,7 +31,7 @@
 -- ####################################################################################
 
 
-local undroppableWeapons = {"weapon_physcannon", "weapon_physgun", "gmod_camera", "gmod_tool", "weapon_jb_fists"}
+local undroppableWeapons = {"weapon_physcannon", "weapon_physgun", "gmod_camera", "gmod_tool", "weapon_jb_fists","weapon_jb_guardfists"}
 local drop = function( ply, cmd, args )
 	if  (table.HasValue(JB.LastRequestPlayers,ply) and JB.LastRequestTypes[JB.LastRequest] and not JB.LastRequestTypes[JB.LastRequest]:GetCanDropWeapons() )  then return end
 
@@ -44,8 +44,8 @@ local drop = function( ply, cmd, args )
 			if v == weapon:GetClass() then return false end
 		end
 	end
-
-	if IsValid(weapon) then
+	
+	if IsValid(weapon) then 
 		JB:DamageLog_AddPlayerDrop( ply,weapon:GetClass() )
 
 		weapon.IsDropped = true;
@@ -74,34 +74,25 @@ JB.Util.addChatCommand("pickup",pickup);
 
 local function teamSwitch(p,cmd)
 	if !IsValid(p) then return end
-
-	if cmd == "jb_team_select_guard" and JB:GetGuardsAllowed() > #team.GetPlayers(TEAM_GUARD) and p:Team() ~= TEAM_GUARD then
+	
+	if cmd == "jb_team_select_guard" and JB:GetGuardsAllowed() > #team.GetPlayers(TEAM_GUARD) and p:Team() != TEAM_GUARD then
 		p:SetTeam(TEAM_GUARD);
 		p:KillSilent();
 		p:SendNotification("Switched to guards");
 
 		hook.Call("JailBreakPlayerSwitchTeam",JB.Gamemode,p,p:Team());
-
-		p:SetFrags(0);
-		p:SetDeaths(0);
-	elseif cmd == "jb_team_select_prisoner" and p:Team() ~= TEAM_PRISONER then
+	elseif cmd == "jb_team_select_prisoner" and p:Team() != TEAM_PRISONER then
 		p:SetTeam(TEAM_PRISONER);
 		p:KillSilent();
 		p:SendNotification("Switched to prisoners");
 
 		hook.Call("JailBreakPlayerSwitchTeam",JB.Gamemode,p,p:Team());
-
-		p:SetFrags(0);
-		p:SetDeaths(0);
-	elseif cmd == "jb_team_select_spectator" and p:Team() ~= TEAM_SPECTATOR then
+	elseif cmd == "jb_team_select_spectator" and p:Team() != TEAM_SPECTATOR then
 		p:SetTeam(TEAM_SPECTATOR);
 		p:Spawn();
 		p:SendNotification("Switched to spectator mode");
 
 		hook.Call("JailBreakPlayerSwitchTeam",JB.Gamemode,p,p:Team());
-
-		p:SetFrags(0);
-		p:SetDeaths(0);
 	end
 
 
@@ -130,81 +121,114 @@ JB.Util.addChatCommand("teamswap",teamswap);
 JB.Util.addChatCommand("swap",teamswap);
 JB.Util.addChatCommand("swapteam",teamswap);
 
-concommand.Add("jb_admin_swap",function(p,c,a)
 
-	if not IsValid(p) or not p:IsAdmin() then return end
 
-	local steamid = a[1];
-
-	if not steamid then return end
-
-	for k,v in ipairs(player.GetAll())do
-		if v:SteamID() == steamid then
-			if v:Team() == TEAM_GUARD then
-				v:SetTeam(TEAM_PRISONER);
-				v:KillSilent();
-				v:SendNotification("Forced to prisoners");
-
-				hook.Call("JailBreakPlayerSwitchTeam",JB.Gamemode,p,p:Team());
-			else
-				v:SetTeam(TEAM_GUARD);
-				v:KillSilent();
-				v:SendNotification("Forced to guards");
-
-				hook.Call("JailBreakPlayerSwitchTeam",JB.Gamemode,p,p:Team());
-			end
-
-			for k,it in ipairs(player.GetAll())do
-				it:ChatPrint(p:Nick().." has force swapped "..v:Nick()..".");
-			end
-
-			return;
-		end
+local gangs = function(ply, cmd, t)
+	
+	
+	local numgangs = 2;
+	if (t[1] != nil) then numgangs = tonumber(t[1]) end
+	if (!numgangs) then numgangs = 2 end
+	if (numgangs > 4) then numgangs = 4 end
+	if (numgangs < 2) then numgangs = 2 end
+	
+	
+	if (not ply.GetWarden or not ply:GetWarden()) then
+		ply:SendNotification("You are not the Warden");
+		return
 	end
+	
+	if (ply:GetMadeGangs() == false) then
+		JB:BroadcastNotification(ply:Name().." has divided the prisoners into "..numgangs.." gangs.");
 
-	p:ChatPrint("User not found! " ..steamid)
-end)
-concommand.Add("jb_admin_swap_spectator",function(p,c,a)
+		local players = team.GetPlayers(TEAM_PRISONER);
 
-	if not IsValid(p) or not p:IsAdmin() then return end
-
-	local steamid = a[1];
-
-	if not steamid then return end
-
-	for k,v in ipairs(player.GetAll())do
-		if v:SteamID() == steamid then
-			v:SetTeam(TEAM_SPECTATOR)
-			v:Kill()
-			for k,it in ipairs(player.GetAll())do
-				it:ChatPrint(p:Nick().." has made "..v:Nick().." a spectator.");
+		local gangcount = 0
+		for k, v in RandomPairs(players) do
+			if (v:Alive()) then
+				gangcount = gangcount + 1
+				if (gangcount > numgangs) then gangcount = 1 end
+				
+				v:SetGang(gangcount);
+				if (gangcount == 4) then
+					v:SetPlayerColor( Vector(1, 0.4, 0.6) );
+					v:SetColor( Color( 255, 0, 255, 255 )) 
+					--v:SetWeaponColor( Vector(1, 0.4, 0.6) );
+					v:SendNotification("You have been placed in the pink gang.");
+				elseif (gangcount == 1) then
+					v:SetPlayerColor( Vector(0.3, 0.4, 1) );
+					v:SetColor( Color( 0, 0, 255, 255 )) 
+					--v:SetWeaponColor( Vector(0.3, 0.4, 1) );
+					v:SendNotification("You have been placed in the blue gang.");
+				elseif (gangcount == 2) then
+					v:SetPlayerColor( Vector(0.3, 1, 0.4) );
+					v:SetColor( Color( 0, 255, 0, 255 )) 
+					--v:SetWeaponColor( Vector(0.3, 1, 0.4) );
+					v:SendNotification("You have been placed in the green gang.");
+				elseif (gangcount == 3) then
+					v:SetPlayerColor( Vector(1, 1, 0.3) );
+					v:SetColor( Color( 255, 255, 0, 255 )) 
+					--v:SetWeaponColor( Vector(1, 1, 0.3) );
+					v:SendNotification("You have been placed in the yellow gang.");
+				end;
 			end
-			return;
-		end
+		end;
+
+		ply:SetMadeGangs(true);
+	else
+	
+		JB:BroadcastNotification(ply:Name().." has dissolved the gangs.");
+
+		for k, v in pairs( team.GetPlayers(TEAM_PRISONER) ) do
+			v:SetPlayerColor( Vector(.9,.9,.9) );
+			v:SetColor( Color( 255, 255, 255, 255 )) 
+			v:SetGang(0);
+		end;
+
+		ply:SetMadeGangs(false);
+	end;
+	
+	
+end
+JB.Util.addChatCommand("gangs",gangs);
+
+
+
+
+local rebel = function(ply, cmd, t)
+	
+	if (not ply.GetWarden or not ply:GetWarden()) then
+		ply:SendNotification("You are not the Warden");
+		return
 	end
-
-	p:ChatPrint("User not found! "..steamid)
-end)
-concommand.Add("jb_admin_revive",function(p,c,a)
-
-	if not IsValid(p) or not p:IsAdmin() then return end
-
-	local steamid = a[1];
-
-	if not steamid then return end
-
-	for k,v in ipairs(player.GetAll())do
-		if v:SteamID() == steamid then
-			v._jb_forceRespawn=true
-			v:Spawn()
-
-			for k,it in ipairs(player.GetAll())do
-				it:ChatPrint(p:Nick().." has revived "..v:Nick()..".")
+	
+	if (t[1] != nil) then
+	
+		for k,v in pairs(team.GetPlayers(TEAM_PRISONER))do
+			if (string.find( string.lower(v:Nick()),  string.lower(t[1])) != nil and v:Alive()) then 
+				v:AddRebelStatus();
 			end
-
-			return;
 		end
+	
 	end
+end
+JB.Util.addChatCommand("rebel",rebel);
 
-	p:ChatPrint("User not found! "..steamid)
-end)
+local unrebel = function(ply, cmd, t)
+	
+	if (not ply.GetWarden or not ply:GetWarden()) then
+		ply:SendNotification("You are not the Warden");
+		return
+	end
+	
+	if (t[1] != nil) then
+	
+		for k,v in pairs(team.GetPlayers(TEAM_PRISONER))do
+			if (string.find( string.lower(v:Nick()),  string.lower(t[1])) != nil and v:Alive()) then 
+				v:RemoveRebelStatus();
+			end
+		end
+	
+	end
+end
+JB.Util.addChatCommand("unrebel",unrebel);

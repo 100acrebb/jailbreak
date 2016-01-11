@@ -1,42 +1,8 @@
--- ####################################################################################
--- ##                                                                                ##
--- ##                                                                                ##
--- ##     CASUAL BANANAS CONFIDENTIAL                                                ##
--- ##                                                                                ##
--- ##     __________________________                                                 ##
--- ##                                                                                ##
--- ##                                                                                ##
--- ##     Copyright 2014 (c) Casual Bananas                                          ##
--- ##     All Rights Reserved.                                                       ##
--- ##                                                                                ##
--- ##     NOTICE:  All information contained herein is, and remains                  ##
--- ##     the property of Casual Bananas. The intellectual and technical             ##
--- ##     concepts contained herein are proprietary to Casual Bananas and may be     ##
--- ##     covered by U.S. and Foreign Patents, patents in process, and are           ##
--- ##     protected by trade secret or copyright law.                                ##
--- ##     Dissemination of this information or reproduction of this material         ##
--- ##     is strictly forbidden unless prior written permission is obtained          ##
--- ##     from Casual Bananas                                                        ##
--- ##                                                                                ##
--- ##     _________________________                                                  ##
--- ##                                                                                ##
--- ##                                                                                ##
--- ##     Casual Bananas is registered with the "Kamer van Koophandel" (Dutch        ##
--- ##     chamber of commerce) in The Netherlands.                                   ##
--- ##                                                                                ##
--- ##     Company (KVK) number     : 59449837                                        ##
--- ##     Email                    : info@casualbananas.com                          ##
--- ##                                                                                ##
--- ##                                                                                ##
--- ####################################################################################
 
 
-/*
 
-	These are the variables you may edit to add new guns:
 
-*/
-SWEP.Primary.NumShots		= 1;												// Number of bullets per shot fired, could be used to make a shotgun pellet effect.
+SWEP.Primary.NumShots		= 1;												// Number of bullets per shot fired, could be used to make a shotgun pellet effect. 
 SWEP.Primary.Automatic		= true												// Automatic firing mode
 SWEP.Primary.Sound			= Sound( "Weapon_AK47.Single" );					// Weapon sound. Always precache this using the Sound function!
 SWEP.Primary.Ammo			= "SMG1";											// ammo type, SMG1 for all primary weapons, pistol for secondary; we don't want complicated ammo systems in this gamemode!
@@ -55,18 +21,14 @@ SWEP.HoldType 				= "melee2"											// should be smg1, ar2 or revolver
 --SWEP.ReloadSequenceTime 	= 1.85; 											// for rechamber -  Don't set this if you don't know it. Use the ModelViewer in SourceSDK to find out what the right time is.
 SWEP.Primary.Range 			= WEAPON_SNIPER										// sniper, smg, rifle or pistol effective range
 SWEP.FakeIronSights			= false												// for weapons without proper ironsights, such as the M4A1
-
+SWEP.NextReloadSequence		= 0													// for shotgun shell loading
 SWEP.Positions 				= {
 	 								{pos = Vector(0,0,0), ang = Vector(0,0,0)}, // Viewmodel positions in IDLE mode
 	 								{pos = Vector(0,0,0), ang = Vector(0,0,0)}, // Viewmodel positions in AIM mode
 	 								{pos = Vector(0,0,0), ang = Vector(0,0,0)}  // Viewmodel positions in SPRINT mode
 							};
 
-/*
 
-	Anything below this line you shouldn't have to read or touch!
-
-*/
 
 AddCSLuaFile()
 AddCSLuaFile("client.lua");
@@ -99,9 +61,9 @@ SWEP.Secondary.Ammo			= "none";
 SWEP.Author			= "Excl";
 SWEP.Contact		= "info@casualbananas.com";
 SWEP.Purpose		= "For use in the Jail Break 7 gamemode.";
-SWEP.Instructions	= "Left click to shoot, R to reload.";
+SWEP.Instructions	= "Left click to shoot, right click to aim, R to reload.";
 SWEP.Spawnable		= false
-SWEP.AdminSpawnable	= true
+SWEP.AdminSpawnable	= true 
 SWEP.Category		= "Jail Break 7";
 SWEP.UseHands = true;
 
@@ -125,10 +87,10 @@ function SWEP:SetupDataTables()
 end
 
 function SWEP:Initialize()
-	if IsValid(self) and self.SetWeaponHoldType then
+	if IsValid(self) and self.SetWeaponHoldType then 
 		self:SetWeaponHoldType(self.HoldType);
 	end
-
+	
 	if CLIENT then
 		if not IsValid(self.ViewModelReference) then
 			self.ViewModelReference = ClientsideModel(self.ViewModel, RENDERGROUP_BOTH)
@@ -146,7 +108,7 @@ function SWEP:Deploy()
 	self:SetReloading(false);
 
 	timer.Destroy(self.Owner:SteamID().."ReloadTimer")
-
+	
 	self.originalWalkSpeed = IsValid(self.Owner) and self.Owner:GetWalkSpeed() or 260;
 
 	return true;
@@ -155,71 +117,84 @@ end
 function SWEP:Holster()
 	//self.OldAmmo = self:Clip1();
 	//self:SetClip1(1);
-
+	
 	self:SetNWLastShoot(0);
-
+	
 	if self.Owner.SteamID and self.Owner:SteamID() then
 		timer.Destroy(self.Owner:SteamID().."ReloadTimer")
 	end
 
 	if SERVER then
 		self.Owner:SetFOV(0,0.6)
-		self.Owner:SetWalkSpeed(self.originalWalkSpeed)
+		self.Owner:SetWalkSpeed(self.originalWalkSpeed)	
 	end
 	return true;
 end
 
 SWEP.NextReload = CurTime();
 local timeStartReload;
-function SWEP:Reload()
+function SWEP:Reload()	
 	if self.NextReload > CurTime() or self.Owner:GetAmmoCount(self.Primary.Ammo) <= 0 or self:GetNWMode() == MODE_SPRINT or self:GetNWMode() == MODE_AIM or !IsFirstTimePredicted()  then return end
 
-	self:SetNWMode(MODE_NORMAL);
-	self:SendWeaponAnim(ACT_VM_RELOAD);
-	self.Owner:SetAnimation(PLAYER_RELOAD);
-
-	self.NextReload = CurTime()+4;
-
-
-
-	local clip = self:Clip1();
-	local dur;
-	if clip > 0 then
-		self.Rechamber = false;
-		self:SetClip1(1);
-
-		dur = self.Owner:GetViewModel():SequenceDuration();
-	else
-		self.Rechamber = true;
-
-		dur = self.ReloadSequenceTime or self.Owner:GetViewModel():SequenceDuration();
-	end
-
-	self:SetNextPrimaryFire(CurTime()+dur);
-	timer.Create(self.Owner:SteamID().."ReloadTimer", dur,1,function()
-		if not self or not IsValid(self) or not self.Owner or not IsValid(self.Owner) then return end
-
-		amt = math.Clamp(self.Owner:GetAmmoCount(self.Primary.Ammo),0,self.Primary.ClipSize);
-		self.Owner:RemoveAmmo(amt,self.Primary.Ammo);
-
-		if not self.Rechamber then
-			if SERVER then
-				self:SetClip1(amt+1);
-			end
+	
+	
+	
+	if (self.HoldType == "shotgun") then
+	
+		self:SetNWMode(MODE_NORMAL);
+		self:SendWeaponAnim(ACT_SHOTGUN_RELOAD_START);
+		self.Owner:SetAnimation(PLAYER_RELOAD);
+	
+		self.NextReloadSequence = CurTime() + 0.3
+		--self.Weapon:SetNetworkedBool( "reloading", true )
+		--self.Weapon:SetVar( "reloadtimer", CurTime() + 0.3 )
+		--self.Weapon:SendWeaponAnim( ACT_SHOTGUN_RELOAD_START )
+		--self.Owner:DoReloadEvent()
+	
+	else -- not a shotgun
+	
+		self:SetNWMode(MODE_NORMAL);
+		self:SendWeaponAnim(ACT_VM_RELOAD);
+		self.Owner:SetAnimation(PLAYER_RELOAD);
+	
+		self.NextReload = CurTime()+4; -- CHANGE THIS FOR SHOTGUNS
+		
+		local clip = self:Clip1();
+		local dur;
+		if clip > 0 then
+			self.Rechamber = false;
+			self:SetClip1(1);
+			dur = self.Owner:GetViewModel():SequenceDuration();
 		else
-			if SERVER then
-				self:SetClip1(amt);
-			end
-			self:SendWeaponAnim(ACT_VM_DRAW);
-			self:SetNextPrimaryFire(CurTime()+.2);
+			self.Rechamber = true;
+			dur = self.ReloadSequenceTime or self.Owner:GetViewModel():SequenceDuration();
 		end
 
-
-		self:SetReloading(false);
-	end)
-	self:SetReloading(true);
-
-	self:SetNWLastShoot(0);
+		self:SetNextPrimaryFire(CurTime()+dur);
+		timer.Create(self.Owner:SteamID().."ReloadTimer", dur,1,function()
+			if not self or not IsValid(self) or not self.Owner or not IsValid(self.Owner) then return end
+			
+			amt = math.Clamp(self.Owner:GetAmmoCount(self.Primary.Ammo),0,self.Primary.ClipSize);
+			self.Owner:RemoveAmmo(amt,self.Primary.Ammo);
+			
+			if not self.Rechamber then
+				if SERVER then 
+					self:SetClip1(amt+1);
+				end
+			else
+				if SERVER then
+					self:SetClip1(amt);
+				end
+				self:SendWeaponAnim(ACT_VM_DRAW);
+				self:SetNextPrimaryFire(CurTime()+.2);	
+			end	
+			self:SetReloading(false);
+		end)
+		self:SetReloading(true);
+		self:SetNWLastShoot(0);
+	end -- not a shotgun
+	
+	
 end
 
 SWEP.AddCone = 0;
@@ -230,10 +205,15 @@ SWEP.originalWalkSpeed = 260;
 
 local speed;
 function SWEP:Think()
+
+	if (self.HoldType == "shotgun") then
+		self:HandleReloadTimer()
+	end
+	
 	if CLIENT and IsValid(self) then
 			speed= self.Owner:GetVelocity():Length();
 
-			if speed > self.Owner:GetWalkSpeed() + 20 and self.Owner:KeyDown(IN_SPEED) and self:GetNWMode() ~= MODE_SPRINT then
+			if speed > self.Owner:GetWalkSpeed() + 20 and self.Owner:KeyDown(IN_SPEED) and self:GetNWMode() != MODE_SPRINT then
 				self:SetNWMode(MODE_SPRINT);
 			elseif speed <= 10 and self.Owner:KeyDown(IN_SPEED) and self:GetNWMode() == MODE_SPRINT then
 				self:SetNWMode(MODE_NORMAL);
@@ -242,6 +222,7 @@ function SWEP:Think()
 			if self:GetNWMode() == MODE_SPRINT and (!self.Owner:KeyDown(IN_SPEED) or speed < self.Owner:GetWalkSpeed()) then
 				self:SetNWMode(MODE_NORMAL);
 			end
+			
 	elseif SERVER and IsValid(self) then
 		if IsFirstTimePredicted() then
 			speed= self.Owner:GetVelocity():Length();
@@ -249,12 +230,12 @@ function SWEP:Think()
 			if self.Owner:Crouching() and speed < 30 then
 				mul = self.Primary.CrouchConeMul;
 			elseif speed > self.Owner:GetWalkSpeed() + 20 then
-				mul = 2;
+				mul = mul+7;
 				if self.Owner:KeyDown(IN_SPEED) then
 					self:SetNWMode(MODE_SPRINT);
 				end
 			elseif speed > 120 then
-				mul = 1.5;
+				mul = mul+8;
 			end
 
 			if self:GetNWMode() == MODE_AIM then
@@ -266,8 +247,8 @@ function SWEP:Think()
 			end
 
 			self.oldMul = Lerp(0.5,self.oldMul,mul);
-
-			if self.LastShoot+0.2 < CurTime() then
+			
+			if self.LastShoot+0.2 < CurTime() then 
 				self.AddCone = self.AddCone-(self.Primary.ShootConeAdd/5);
 				if self.AddCone < 0 then
 					self.AddCone=0;
@@ -278,10 +259,10 @@ function SWEP:Think()
 		end
 	end
 
-	if SERVER and self:GetNWMode() == MODE_AIM and self.Owner:GetWalkSpeed() ~= self.originalWalkSpeed*.65 then
+	if SERVER and self:GetNWMode() == MODE_AIM and self.Owner:GetWalkSpeed() != self.originalWalkSpeed*.65 then
 		self.Owner:SetWalkSpeed(self.originalWalkSpeed*.65)
-	elseif SERVER and self:GetNWMode() ~= MODE_AIM and self.Owner:GetWalkSpeed() ~= self.originalWalkSpeed then
-		self.Owner:SetWalkSpeed(self.originalWalkSpeed)
+	elseif SERVER and self:GetNWMode() != MODE_AIM and self.Owner:GetWalkSpeed() != self.originalWalkSpeed then
+		self.Owner:SetWalkSpeed(self.originalWalkSpeed)	
 	end
 
 	if self.nextBurst and self.nextBurst <= CurTime() and self.burstLeft and self.burstLeft >= 1 then
@@ -293,11 +274,11 @@ function SWEP:Think()
 			return;
 		end
 
-		self:JB_ShootBullet( self.Primary.Damage, self.Primary.Recoil, self.Primary.NumShots, self:GetNWLastShoot(), self.Primary.NumShots)
+		self:JB_ShootBullet( self.Primary.Damage, self.Primary.Recoil * 1.5, self.Primary.NumShots, self:GetNWLastShoot(), self.Primary.NumShots)
 
 		self.AddCone = math.Clamp(self.AddCone+self.Primary.ShootConeAdd,0,self.Primary.MaxCone)
 		self.LastShoot = CurTime();
-
+	
 
 		if SERVER then
 			self.Owner:EmitSound(self.Primary.Sound, 100, math.random(95, 105))
@@ -307,15 +288,64 @@ function SWEP:Think()
 	end
 end
 
+
+
+function SWEP:HandleReloadTimer()
+
+	
+
+		if ( self.NextReloadSequence > 0 and self.NextReloadSequence < CurTime() ) then
+			
+			// Finsished reload
+			if ( self:Clip1() >= self.Primary.ClipSize or self.Owner:GetAmmoCount( self.Primary.Ammo ) <= 0 ) then
+				self:SetNextPrimaryFire(CurTime() + 0.5)
+				self:SetNextSecondaryFire(CurTime() + 0.5)
+				self.NextReloadSequence = 0
+				self:SendWeaponAnim(ACT_SHOTGUN_RELOAD_FINISH)
+				
+			else
+			
+				// Next cycle
+				self.NextReloadSequence = CurTime() + 0.3
+				self:SendWeaponAnim( ACT_VM_RELOAD )
+				self.Owner:SetAnimation(PLAYER_RELOAD);
+				
+				// Add ammo
+				self.Owner:RemoveAmmo( 1, self.Primary.Ammo, false )
+				self:SetClip1(  self:Clip1() + 1 )
+				
+				-- so we can catch this in primary fire, which is allowed during reload for shotguns
+				self:SetNextPrimaryFire(CurTime() + 0.0)
+				self:SetNextSecondaryFire(CurTime() + 0.0)
+			
+			end
+
+			
+		end
+	
+end
+
+
+
 function SWEP:OnDrop()
 	if CLIENT or not IsValid(self.Owner) then return end
 
-	self.Owner:SetWalkSpeed(self.originalWalkSpeed)
+	self.Owner:SetWalkSpeed(self.originalWalkSpeed)	
 end
 
 
 
 function SWEP:PrimaryAttack()
+
+	-- since we're here, go ahead and turn off any shotgun reloads that are going on.
+	if (self.NextReloadSequence > 0) then
+		self.NextReloadSequence = 0
+		self:SetNextPrimaryFire(CurTime() + 0.5)
+		self:SetNextSecondaryFire(CurTime() + 0.5)
+		self:SendWeaponAnim(ACT_IDLE)
+		return
+	end
+	
 	if self:GetNWMode() == MODE_SPRINT then return end
 
 	local delay = self.Primary.Burst > 0 and self.Primary.Delay * (self.Primary.Burst + 1) or self.Primary.Delay;
@@ -325,19 +355,19 @@ function SWEP:PrimaryAttack()
 		self:EmitSound( "Weapon_Pistol.Empty" )
 		return;
 	end
-
+	
 	self:SetNextPrimaryFire(CurTime()+delay);
-
-	self:JB_ShootBullet( self.Primary.Damage, self.Primary.Recoil, self.Primary.NumShots, self:GetNWLastShoot(), self.Primary.NumShots)
+	
+	self:JB_ShootBullet( self.Primary.Damage, self.Primary.Recoil * 1.5, self.Primary.NumShots, self:GetNWLastShoot(), self.Primary.NumShots)
 
 	if IsFirstTimePredicted() and self.Primary.Burst > 0 then
 		self.nextBurst=CurTime()+self.Primary.Delay;
 		self.burstLeft=self.Primary.Burst-1;
 	end
-
+	
 	self.AddCone = math.Clamp(self.AddCone+self.Primary.ShootConeAdd,0,self.Primary.MaxCone)
 	self.LastShoot = CurTime();
-
+	
 	if SERVER then
 		self.Owner:EmitSound(self.Primary.Sound, 100, math.random(95, 105))
 	end
@@ -349,7 +379,7 @@ function SWEP:SecondaryAttack()
 	if self:GetNWMode() == MODE_SPRINT or self:GetReloading() or (SERVER and not IsFirstTimePredicted()) then return end
 
 	self:SetNWMode(cvarAimToggle:GetBool(self.Owner) and (self:GetNWMode() == MODE_AIM and MODE_NORMAL or MODE_AIM) or MODE_AIM);
-
+	
 	self:SetNextSecondaryFire(CurTime() + .3);
 end
 hook.Add("KeyRelease", "jbWepBaseHandleUnAim", function(p,k)
@@ -388,7 +418,7 @@ function SWEP:JB_ShootBullet( dmg, recoil, numbul, cone )
 			   end
 			 end
 		}
-
+	
 		self.Owner:FireBullets(bullet)
 	end
 
@@ -397,12 +427,12 @@ function SWEP:JB_ShootBullet( dmg, recoil, numbul, cone )
 	end
 	self.Owner:SetAnimation(PLAYER_ATTACK1);
 	self.Owner:MuzzleFlash();
-
-
+	
+	
 	if CLIENT then
 		self:FireCallback();
-
-		if  IsFirstTimePredicted() then
+	
+		if  IsFirstTimePredicted() then	
 			local eyeang = self.Owner:EyeAngles()
 			eyeang.pitch = eyeang.pitch - (recoil * 1 * 0.3)*2
 			eyeang.yaw = eyeang.yaw - (recoil * math.random(-1, 1) * 0.3)
@@ -472,22 +502,22 @@ function SWEP:TranslateActivity( act )
 	local holdtype = string.lower(self.HoldType);
 
 	if ( holdtype == "ar2" or holdtype=="smg" ) then
-		if self:GetNWMode() == MODE_NORMAL and ActivityTranslateHipFire[ act ] ~= nil  then
+		if self:GetNWMode() == MODE_NORMAL and ActivityTranslateHipFire[ act ] != nil  then
 			return ActivityTranslateHipFire[ act ]
-		elseif self:GetNWMode() == MODE_SPRINT and ActivityTranslateSprintRifle[ act ] ~= nil then
+		elseif self:GetNWMode() == MODE_SPRINT and ActivityTranslateSprintRifle[ act ] != nil then
 			return ActivityTranslateSprintRifle[act];
 		end
 	end
 
 	if ( holdtype == "revolver" or holdtype=="pistol") then
-		if self:GetNWMode() == MODE_NORMAL and holdtype == "revolver" and ActivityTranslatePistolNoAim[ act ] ~= nil  then
+		if self:GetNWMode() == MODE_NORMAL and holdtype == "revolver" and ActivityTranslatePistolNoAim[ act ] != nil  then
 			return ActivityTranslatePistolNoAim[ act ]
-		elseif self:GetNWMode() == MODE_SPRINT and ActivityTranslateSprintPistol[ act ] ~= nil  then
+		elseif self:GetNWMode() == MODE_SPRINT and ActivityTranslateSprintPistol[ act ] != nil  then
 			return ActivityTranslateSprintPistol[ act ]
 		end
 	end
 
-	if ( self.ActivityTranslate[ act ] ~= nil ) then
+	if ( self.ActivityTranslate[ act ] != nil ) then
 		return self.ActivityTranslate[ act ]
 	end
 

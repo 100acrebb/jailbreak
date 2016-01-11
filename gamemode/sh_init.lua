@@ -42,13 +42,14 @@ end
 
 config.debug = makeConfig("jb_config_debug","0") 
 config.font = makeConfig("jb_config_font","Roboto")
-config.website = makeConfig("jb_config_website","example.com");
+config.website = makeConfig("jb_config_website","thehundredacrebloodbath.com");
 config.maxWardenItems = makeConfig("jb_config_max_warden_items","20");
 config.maxWardenRounds = makeConfig("jb_config_max_warden_rounds","3");
 config.joinTime = makeConfig("jb_config_jointime","20"); 
 config.setupTime = makeConfig("jb_config_setuptime","60"); 
+config.noMicTime = makeConfig("jb_config_nomictime","10"); 
 config.guardsAllowed = makeConfig("jb_config_guards_allowed","30");
-config.rebelSensitivity = makeConfig("jb_config_rebel_sensitivity","2");
+config.rebelSensitivity = makeConfig("jb_config_rebel_sensitivity","1");
 config.guardPlaytime = makeConfig("jb_config_guards_playtime","120");
 config.prisonerNameChange = makeConfig("jb_config_prisoners_namechange","0");
 config.wardenControl = makeConfig("jb_config_warden_control_enabled","1");
@@ -87,7 +88,7 @@ setmetatable(JB.Config,{
 		if config[key] then
 			if SERVER then
 				local val = GetConVarString(config[key].name);
-				return val and val ~= "" and val or config[key] and config[key].default or "0";
+				return val and val != "" and val or config[key] and config[key].default or "0";
 			elseif CLIENT then
 				return config[key].v or config[key].default;
 			end

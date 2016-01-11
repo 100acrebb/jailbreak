@@ -131,7 +131,8 @@ vgui.Register("JBNoticePanel",{
 		surface.DrawTexturedRectRotated(w/2 + bracket_wide/2 + self.distanceBrackets/2, h/2, bracket_wide, bracket_tall, 180) -- right bracket
 		
 		draw.SimpleText(self.type,"JBSmall",math.Round(w/2),8,self.colorText,1,0);
-		draw.SimpleText(self.text,"JBLarge",math.Round(w/2),h/2 + 6, self.colorText,1,1);
+		--draw.SimpleText(self.text,"JBLarge",math.Round(w/2),h/2 + 6, self.colorText,1,1);
+		draw.SimpleTextOutlined(self.text,"JBLarge",math.Round(w/2),h/2 + 6, self.colorText,1,1, 1, Color(0,0,0,255));
 	end,
 	IsDone = function(self)
 		return (self.state == state_die and self.distanceBrackets <= 0 );

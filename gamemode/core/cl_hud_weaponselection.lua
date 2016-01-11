@@ -40,6 +40,7 @@ local function ArrangeSlots()
 	slots = {};
 	c = 0;
 	for k,v in pairs(LocalPlayer():GetWeapons())do
+		--print(v:GetClass())
 		if v.Slot then
 			if not slots[v.Slot+1] then
 				slots[v.Slot+1] = {}
@@ -70,30 +71,32 @@ local tabX = {-256,-256,-256,-256};
 local matTile = Material("materials/jailbreak_excl/weapon_selection_tile.png");
 local mul;
 hook.Add("Think","JB.Think.WeaponSelection.Animate",function()
-	if selectedTab > 0 and LocalPlayer():Alive() and LocalPlayer():Team() < 3 then
+	if selectedTab > 0 and LocalPlayer():Alive() and LocalPlayer():Team() <= TEAM_GUARD then
 		mul=FrameTime()*40;
 		tabX[1] = math.Clamp(Lerp(0.20 * mul,tabX[1],1),-256,0);
 		tabX[2] = math.Clamp(Lerp(0.18 * mul,tabX[2],1),-256,0);
 		tabX[3] = math.Clamp(Lerp(0.16 * mul,tabX[3],1),-256,0);
 		tabX[4] = math.Clamp(Lerp(0.14 * mul,tabX[4],1),-256,0);
-	else
+		--tabX[5] = math.Clamp(Lerp(0.14 * mul,tabX[5],1),-256,0);
+	else 
 		mul=FrameTime()*40;
 		tabX[1] = math.Clamp(Lerp(0.40 * mul,tabX[1],-256),-256,0);
 		tabX[2] = math.Clamp(Lerp(0.39 * mul,tabX[2],-256),-256,0);
 		tabX[3] = math.Clamp(Lerp(0.38 * mul,tabX[3],-256),-256,0);
 		tabX[4] = math.Clamp(Lerp(0.37 * mul,tabX[4],-256),-256,0);
+		--tabX[5] = math.Clamp(Lerp(0.37 * mul,tabX[5],-256),-256,0);
 	end
 end);
 hook.Add("HUDPaint","JB.HUDPaint.WeaponSelection",function()
-	if tabX[1] >= -256 and LocalPlayer():Alive() and LocalPlayer():Team() < 3 then
+	if tabX[1] >= -256 and LocalPlayer():Alive() and LocalPlayer():Team() <= TEAM_GUARD then
 		for i=1,4 do
 			local y = 250 + ((i-1) * 54);
 			local x = math.Round(tabX[i]);
-
+		
 			surface.SetDrawColor(selectedTab == i and JB.Color.white or JB.Color["#888"]);
 			surface.SetMaterial(matTile);
 			surface.DrawTexturedRect(x + 0,y,256,64);
-
+				
 			if slots[i] and slots[i][1] then
 				draw.SimpleText(slots[i][1].PrintName or "Invalid","JBWeaponSelectionFontBlur",x + 210,y+(64-40)/2+40/2, JB.Color.black,2,1)
 				draw.SimpleText(slots[i][1].PrintName or "Invalid","JBWeaponSelectionFont",x + 210,y+(64-40)/2+40/2, selectedTab == i and JB.Color.white or JB.Color["#888"],2,1)
@@ -111,12 +114,12 @@ timer.Create("UpdateSWEPSelectthings",1,0,function()
 end)
 
 local nScroll = 1;
-function JB.Gamemode:PlayerBindPress(p, bind, pressed)
+hook.Add("PlayerBindPress","JB.PlayerBindPress.WeaponSelection", function(p, bind, pressed)
 
-	if not pressed then return false end
+	if not pressed then return end
 
 	if string.find(bind, "invnext") then
-		if LocalPlayer():Team() > 2 or !LocalPlayer():Alive() then return true  end
+		if LocalPlayer():Team() > TEAM_GUARD or !LocalPlayer():Alive() then return true  end
 		nScroll = nScroll + 1;
 		if nScroll > 4 then
 			nScroll = 1;
@@ -127,9 +130,10 @@ function JB.Gamemode:PlayerBindPress(p, bind, pressed)
 		end
 		selectedTab = nScroll;
 		ArrangeSlots();
+		--RunConsoleCommand("use",slots[selectedTab][slotPos]:GetClass())
 		return true;
 	elseif string.find(bind, "invprev") then
-		if LocalPlayer():Team() > 2 or !LocalPlayer():Alive() then return true  end
+		if LocalPlayer():Team() > TEAM_GUARD or !LocalPlayer():Alive() then return true  end
 
 		nScroll = nScroll-1;
 		if nScroll < 1 then
@@ -141,12 +145,13 @@ function JB.Gamemode:PlayerBindPress(p, bind, pressed)
 		end
 		selectedTab = nScroll;
 		ArrangeSlots();
+		--RunConsoleCommand("use",slots[selectedTab][slotPos]:GetClass())
 		return true;
-	elseif string.find(bind, "slot0") then
+	elseif string.find(bind, "slot0") then 
 		selectedTab = 0;
-		return true
-	elseif string.find(bind, "slot1") then
-		if LocalPlayer():Team() > 2 or !LocalPlayer():Alive() then return true  end
+		return true 
+	elseif string.find(bind, "slot1") then 
+		if LocalPlayer():Team() > TEAM_GUARD or !LocalPlayer():Alive() then return true  end
 		if selectedTab ~= 1 then
 			surface.PlaySound("common/wpn_moveselect.wav");
 		else
@@ -155,9 +160,9 @@ function JB.Gamemode:PlayerBindPress(p, bind, pressed)
 		end
 		selectedTab = 1;
 		ArrangeSlots();
-		return true
+		return true 
 	elseif string.find(bind, "slot2") then
-		if LocalPlayer():Team() > 2 or !LocalPlayer():Alive() then return true  end
+		if LocalPlayer():Team() > TEAM_GUARD or !LocalPlayer():Alive() then return true  end
 		if selectedTab ~= 2 then
 			surface.PlaySound("common/wpn_moveselect.wav");
 		else
@@ -166,9 +171,9 @@ function JB.Gamemode:PlayerBindPress(p, bind, pressed)
 		end
 		selectedTab = 2;
 		ArrangeSlots();
-		return true
-	elseif string.find(bind, "slot3") then
-		if LocalPlayer():Team() > 2 or !LocalPlayer():Alive() then return true  end
+		return true 
+	elseif string.find(bind, "slot3") then 
+		if LocalPlayer():Team() > TEAM_GUARD or !LocalPlayer():Alive() then return true  end
 		if selectedTab ~= 3 then
 			surface.PlaySound("common/wpn_moveselect.wav");
 		else
@@ -177,9 +182,9 @@ function JB.Gamemode:PlayerBindPress(p, bind, pressed)
 		end
 		selectedTab = 3;
 		ArrangeSlots();
-		return true
-	elseif string.find(bind, "slot4") then
-		if LocalPlayer():Team() > 2 or !LocalPlayer():Alive() then return true  end
+		return true 
+	elseif string.find(bind, "slot4") then 
+		if LocalPlayer():Team() > TEAM_GUARD or !LocalPlayer():Alive() then return true  end
 		if selectedTab ~= 4 then
 			surface.PlaySound("common/wpn_moveselect.wav");
 		else
@@ -189,25 +194,25 @@ function JB.Gamemode:PlayerBindPress(p, bind, pressed)
 		selectedTab = 4;
 		ArrangeSlots();
 		return true
-	elseif string.find(bind, "slot5") then
+	elseif string.find(bind, "slot5") then 
 		selectedTab = 0;
 		return true
-	elseif string.find(bind, "slot6") then
+	elseif string.find(bind, "slot6") then 
 		selectedTab = 0;
 		return true
-	elseif string.find(bind, "slot7") then
+	elseif string.find(bind, "slot7") then 
 		selectedTab = 0;
 		return true
-	elseif string.find(bind, "slot8") then
+	elseif string.find(bind, "slot8") then 
 		selectedTab = 0;
 		return true
-	elseif string.find(bind, "slot9") then
+	elseif string.find(bind, "slot9") then 
 		selectedTab = 0;
 		return true
-	elseif string.find(bind, "+attack") then
-		if LocalPlayer():Team() > 2 then return true end
+	elseif string.find(bind, "+attack") then 
+		if LocalPlayer():Team() > TEAM_GUARD then return true end
 		if selectedTab > 0 and slots[selectedTab] then
-			if not slots[selectedTab][slotPos] or not IsValid(slots[selectedTab][slotPos]) then return true end
+			if not slots[selectedTab][slotPos] then return true end
 			RunConsoleCommand("use",slots[selectedTab][slotPos]:GetClass())
 
 			nScroll = selectedTab;
@@ -216,6 +221,4 @@ function JB.Gamemode:PlayerBindPress(p, bind, pressed)
 			return true;
 		end
 	end
-
-	return false
-end
+end,10)

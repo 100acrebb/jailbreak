@@ -30,16 +30,9 @@
 -- ##                                                                                ##
 -- ####################################################################################
 
-local cvarAlwaysSpectator = CreateClientConVar( "jb_cl_option_always_spectate", "0", true, false )
-hook.Add("Initialize","JB.AutomateSpectatorSpawn",function()
-  if cvarAlwaysSpectator:GetBool() then
-    RunConsoleCommand("jb_team_select_spectator");
-  end
-end)
-
 function JB.Gamemode:KeyPress( ply, key )
    if ( not IsFirstTimePredicted() ) then return end
-   if ( not IsValid( ply ) or ply ~= LocalPlayer() ) then return end
+   if ( not IsValid( ply ) or ply != LocalPlayer() ) then return end
 end
 
 local fovSmooth;
@@ -49,15 +42,15 @@ function JB.Gamemode:CalcView( ply, pos, ang, fov, nearZ, farZ )
 	local ragdoll =  LocalPlayer():GetRagdollEntity();
     if IsValid(ragdoll) and LocalPlayer():GetObserverMode() == OBS_MODE_NONE then
         local eyes = ragdoll:GetAttachment( ragdoll:LookupAttachment( "eyes" ) );
-
+        
 		if not eyes then return end
-
+		
 	    local view = {
 	        origin = eyes.Pos,
 	        angles = eyes.Ang,
-			fov = 90,
+			fov = 90, 
 	    };
-
+	        
 	    return view;
 	end
 
@@ -70,13 +63,13 @@ function JB.Gamemode:CalcView( ply, pos, ang, fov, nearZ, farZ )
 		fovSmooth= Lerp(FrameTime()*5,fovSmooth,(fov + mulSpeed * 10 ));
 		angRightSmooth= -math.abs(math.sin(count)*1);
 		angUpSmooth= math.sin(count)*1.5;
-	else
+	else 
 		fovSmooth= Lerp(FrameTime()*20,fovSmooth,fov);
 		angRightSmooth= Lerp(FrameTime()*10,angRightSmooth,0);
 		angUpSmooth= Lerp(FrameTime()*10,angUpSmooth,0);
 		mulSpeed=0;
 		count=0;
-	end
+	end 
 
 	ang:RotateAroundAxis(ang:Right(),angRightSmooth * 2);
 	ang:RotateAroundAxis(ang:Up(),angUpSmooth * 2);
@@ -85,12 +78,27 @@ function JB.Gamemode:CalcView( ply, pos, ang, fov, nearZ, farZ )
 end
 
 hook.Add( "PreDrawHalos", "JB.PreDrawHalos.AddHalos", function()
-	if JB.LastRequest ~= "0" and JB.LastRequestPlayers then
+	if JB.LastRequest != "0" then
 		for k,v in pairs(JB.LastRequestPlayers)do
 			if not IsValid(v) or LocalPlayer() == v then continue; end
 
 			halo.Add({v},team.GetColor(v:Team()),1,1,2,true,true);
 		end
+	
+	--else
+	--	players=player.GetAll();
+	--	for i=1, #players do
+	--		v=players[i];
+	--		if not IsValid(v) or LocalPlayer() == v or not v:Alive() or v:Team() == TEAM_SPECTATOR then continue; end
+		
+	--		if v.GetRebel and v:GetRebel() then
+	--			halo.Add({v},Color(255, 0, 0, 255),1,1,2,true,false);
+	--		else
+	--			halo.Add({v},team.GetColor(v:Team()),1,1,2,true,false);
+	--		end
+	--	end
+	
+	
 	end
 end )
 
@@ -102,7 +110,7 @@ hook.Add( "RenderScreenspaceEffects", "JB.RenderScreenspaceEffects.ProcessHealth
 	if LocalPlayer():GetObserverMode() == OBS_MODE_NONE then
 		local ft = FrameTime();
 
-		if lastHealth ~= LocalPlayer():Health() then
+		if lastHealth != LocalPlayer():Health() then
 			approachOne = 0;
 		end
 		lastHealth = LocalPlayer():Health();
@@ -121,9 +129,9 @@ hook.Add( "RenderScreenspaceEffects", "JB.RenderScreenspaceEffects.ProcessHealth
 		tab[ "$pp_colour_mulr" ] = 0
 		tab[ "$pp_colour_mulg" ] = 0
 		tab[ "$pp_colour_mulb" ] = 0
-
+	 
 		DrawColorModify( tab )
-
+		
 	end
 end)
 
@@ -180,8 +188,13 @@ hook.Add("PlayerBindPress", "JB.PlayerBindPress.KeyBinds", function(pl, bind, pr
 		end
 		walking=!walking;
 		return true;
-	elseif string.find(bind,"+voicerecord") and pressed and ((pl:Team() == TEAM_PRISONER and (CurTime() - JB.RoundStartTime) < 30) or (not pl:Alive())) then
-		JB:DebugPrint("You can't use voice chat - you're dead or the round isn't 30 seconds in yet.");
-		return true;
+	--elseif string.find(bind,"+voicerecord") and pressed then
+		--if((pl:Team() == TEAM_PRISONER and (CurTime() - JB.RoundStartTime) < 15) or (not pl:Alive())) then
+		--if((pl:Team() == TEAM_PRISONER and (CurTime() - JB.RoundStartTime) < tonumber(JB.Config.noMicTime)) or (not pl:IsAdmin())) then
+		--	if (!pl:IsAdmin()) then
+		--		JB:DebugPrint("You can't use voice chat - the round isn't 10 seconds in yet.");
+		--		return true;
+		--	end
+		--end
 	end
 end)

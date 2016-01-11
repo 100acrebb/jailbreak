@@ -33,5 +33,5 @@
 
 
 JB.Gamemode.PlayerNoClip = function(gm,p)
-	return p:IsSuperAdmin();
+	return false;
 end

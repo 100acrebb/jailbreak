@@ -55,11 +55,14 @@ end
 
 
 function JB:DamageLog_AddEntityTakeDamage( p,dmg )
-	if ( IsValid(p) and p:IsPlayer() and dmg:GetDamage() ~= 0) then
+
+	--print(dmg:GetDamageType())
+	
+	if ( IsValid(p) and p:IsPlayer() and dmg:GetDamage() != 0) then
 		if not JB.ThisRound.Logs then
 			JB.ThisRound.Logs = {};
 		end
-
+		
 		local message={};
 
 		local subject=p;
@@ -93,7 +96,7 @@ function JB:DamageLog_AddEntityTakeDamage( p,dmg )
 		if IsValid(inf) and not (inf.IsPlayer and inf:IsPlayer()) then
 			table.insert(message," by a '"..inf:GetClass().."' entity");
 		end
-
+		
 		table.insert(message,JB.Color.white);
 		table.insert(message,".");
 
@@ -113,7 +116,7 @@ function JB:DamageLog_AddPlayerDeath(p, weapon, killer)
 	if not JB.ThisRound.Logs then
 		JB.ThisRound.Logs = {};
 	end
-
+		
 	local message={};
 
 	local subject=p;
@@ -157,7 +160,7 @@ function JB:DamageLog_AddPlayerPickup( p,class )
 	if not JB.ThisRound.Logs then
 		JB.ThisRound.Logs = {};
 	end
-
+		
 	local message={};
 
 	table.insert(message,team.GetColor(p:Team()));
@@ -180,7 +183,7 @@ function JB:DamageLog_AddPlayerDrop( p,class )
 	if not JB.ThisRound.Logs then
 		JB.ThisRound.Logs = {};
 	end
-
+		
 	local message={};
 
 	table.insert(message,team.GetColor(p:Team()));
@@ -201,7 +204,7 @@ function JB:DamageLog_AddPlayerDrop( p,class )
 end
 
 util.AddNetworkString("JB.GetLogs");
-local getLogs=function(p,cmd,a)
+concommand.Add("jb_logs_get",function(p)
 	if p.nextLogs and p.nextLogs > CurTime() then return end
 
 	if (p:Alive() and not p:IsAdmin()) then
@@ -212,36 +215,8 @@ local getLogs=function(p,cmd,a)
 
 	p.nextLogs = CurTime()+1;
 
-	local logs={};
-
-	if cmd == "jb_logs_get_damage" then
-		for k,v in ipairs(JB.ThisRound.Logs or {})do
-			if v.kind =="DAMAGE" then
-				table.insert(logs,v);
-			end
-		end
-	elseif cmd == "jb_logs_get_kills" then
-		for k,v in ipairs(JB.ThisRound.Logs or {})do
-			if v.kind == "KILL" then
-				table.insert(logs,v);
-			end
-		end
-	elseif cmd == "jb_logs_get_damagekills" then
-		for k,v in ipairs(JB.ThisRound.Logs or {})do
-			if v.kind == "KILL" or v.kind == "DAMAGE" then
-				table.insert(logs,v);
-			end
-		end
-	else
-		logs=JB.ThisRound.Logs;
-	end
-
 	net.Start("JB.GetLogs");
-	net.WriteTable(logs or {});
+	net.WriteTable(JB.ThisRound.Logs or {});
 	net.WriteBit(true);
 	net.Send(p);
-end
-concommand.Add("jb_logs_get",getLogs);
-concommand.Add("jb_logs_get_kills",getLogs);
-concommand.Add("jb_logs_get_damage",getLogs);
-concommand.Add("jb_logs_get_damagekills",getLogs);
+end);

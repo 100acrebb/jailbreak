@@ -1,0 +1,102 @@
+
+
+
+
+local question,answer,category;
+
+_RTN_RUNSTRING_JB_LR_TRIVIA_QUESTION = 0;
+
+local winner_found = false;
+local LR = JB.CLASS_LR();
+LR:SetName("Trivia");
+LR:SetDescription("After the countdown, a random question about a random subject will be asked. The first person to answer this question correctly in chat will win the last request, the loser will be killed.");
+LR:SetStartCallback(function(prisoner,guard)
+	
+	local url = "http://jservice.io/api/random"
+    http.Fetch(url,
+      function(body, len, headers, code)
+          jtable = util.JSONToTable(body)
+		  
+		  category = jtable[1].category.title
+		  question = jtable[1].question
+		  answer = jtable[1].answer
+      end,
+      function( error )
+          print("ERROR with fetching!")
+      end
+    );
+
+	winner_found = false;
+	
+	net.Start("JB.LR.Trivia.SendQuestion");
+	net.WriteString("Your category is: " .. category);
+	net.Broadcast();
+
+	net.Start("JB.LR.Trivia.SendQuestion");
+	net.WriteString(question);
+	net.Broadcast();
+end) 
+
+LR:SetSetupCallback(function(prisoner,guard)
+	net.Start("JB.LR.Trivia.SendPrepare");
+	net.WriteEntity(prisoner);
+	net.WriteEntity(guard);
+	net.Broadcast();
+
+	return false; // don't halt setup
+end)
+
+LR:SetIcon(Material("icon16/rosette.png"))
+
+local id = LR();
+
+if SERVER then
+	util.AddNetworkString("JB.LR.Trivia.SendQuestion");
+	util.AddNetworkString("JB.LR.Trivia.SendPrepare");
+	util.AddNetworkString("JB.LR.Trivia.SendWinner");
+
+	hook.Add( "PlayerSay", "JB.PlayerSay.LR.Trivia", function( ply, text, team )
+		if JB.LastRequest == id and table.HasValue(JB.LastRequestPlayers,ply) and string.find(string.lower(text),string.lower(answer)) and not winner_found then
+			timer.Simple(0,function()
+				net.Start("JB.LR.Trivia.SendWinner");
+				net.WriteEntity(ply);
+				net.Broadcast();
+			end);
+
+			for k,v in ipairs(JB.LastRequestPlayers)do
+				if IsValid(v) and v != ply then
+					v:Kill();
+				end
+			end
+			winner_found = true;
+		end
+	end )
+elseif CLIENT then
+	hook.Add("PlayerBindPress", "JB.PlayerBindPress.LR.TriviaNoSayBindsFuckYou", function(pl, bind, pressed) // Not the safest way, but it requires the least amount of touching code outside of this file (without using nasty hacky methods)
+		if JB.LastRequest == id and table.HasValue(JB.LastRequestPlayers,pl) and string.find( bind,"say" ) then
+			return true;
+		end
+	end)
+
+	net.Receive("JB.LR.Trivia.SendPrepare",function()
+		local guard,prisoner = net.ReadEntity(),net.ReadEntity();
+
+		if not JB.Util.isValid(guard,prisoner) then return end
+
+		chat.AddText( JB.Color["#bbb"], "Quizmaster", JB.Color.white, ": Hello ", guard, JB.Color.white, " and ", prisoner, JB.Color.white, ", prepare to give your answer via chat." );
+		timer.Simple(2,function()
+			chat.AddText( JB.Color["#bbb"], "Quizmaster", JB.Color.white, ": The first person to answer correctly will win this game of Trivia." );
+		end);
+	end);
+	net.Receive("JB.LR.Trivia.SendQuestion",function()
+		local question = net.ReadString() or "ERROR";
+		chat.AddText( JB.Color["#bbb"], "Quizmaster", JB.Color.white, ": "..question );
+	end);
+	net.Receive("JB.LR.Trivia.SendWinner",function()
+		local winner = net.ReadEntity();
+
+		if not IsValid(winner) then return end
+
+		chat.AddText( JB.Color["#bbb"], "Quizmaster", JB.Color.white, ": That is correct! ", winner, JB.Color.white, " wins." );
+	end);	
+end

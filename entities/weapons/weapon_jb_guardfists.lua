@@ -43,7 +43,8 @@ SWEP.Author			= "Excl"
 SWEP.Purpose		= ""
 
 
-SWEP.ViewModel	= "models/weapons/c_arms_citizen.mdl"
+SWEP.ViewModel	= "models/weapons/c_arms_combine.mdl"
+--SWEP.ViewModel	= "models/weapons/c_arms_citizen.mdl"
 --SWEP.ViewModel	= "models/dpfilms/weapons/v_arms_metropolice.mdl"
 SWEP.WorldModel	= ""
 
@@ -170,13 +171,7 @@ function SWEP:DealDamage()
 		} )
 	end
 
-	if ( tr.Hit ) then
-		--self.Weapon:EmitSound( HitSound )
-		--self:EmitSound("physics/body/body_medium_impact_hard1.wav")
-		self:EmitSound("physics/body/body_medium_impact_hard"..math.random(1, 6)..".wav", 80)
-		
-		
-	end
+	if ( tr.Hit ) then self:EmitSound( HitSound ) end
 
 	local hit = false
 

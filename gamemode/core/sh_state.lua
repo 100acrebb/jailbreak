@@ -1,53 +1,7 @@
--- ####################################################################################
--- ##                                                                                ##
--- ##                                                                                ##
--- ##     CASUAL BANANAS CONFIDENTIAL                                                ##
--- ##                                                                                ##
--- ##     __________________________                                                 ##
--- ##                                                                                ##
--- ##                                                                                ##
--- ##     Copyright 2014 (c) Casual Bananas                                          ##
--- ##     All Rights Reserved.                                                       ##
--- ##                                                                                ##
--- ##     NOTICE:  All information contained herein is, and remains                  ##
--- ##     the property of Casual Bananas. The intellectual and technical             ##
--- ##     concepts contained herein are proprietary to Casual Bananas and may be     ##
--- ##     covered by U.S. and Foreign Patents, patents in process, and are           ##
--- ##     protected by trade secret or copyright law.                                ##
--- ##     Dissemination of this information or reproduction of this material         ##
--- ##     is strictly forbidden unless prior written permission is obtained          ##
--- ##     from Casual Bananas                                                        ##
--- ##                                                                                ##
--- ##     _________________________                                                  ##
--- ##                                                                                ##
--- ##                                                                                ##
--- ##     Casual Bananas is registered with the "Kamer van Koophandel" (Dutch        ##
--- ##     chamber of commerce) in The Netherlands.                                   ##
--- ##                                                                                ##
--- ##     Company (KVK) number     : 59449837                                        ##
--- ##     Email                    : info@casualbananas.com                          ##
--- ##                                                                                ##
--- ##                                                                                ##
--- ####################################################################################
 
-
-
---------------------------------------------------------------------------------------
 --
 --
---   REGARDING CUSTOM MAPVOTE SYSTEMS:
---
---   _________________________
---
---
---   If you want to code your own mapvote, hook the JailBreakStartMapvote hook,
---   start your own mapvote here. Remember to return true in order to stop the
---   round system for a while, while you run your mapvote.
---
---   _________________________
---
---
---   You might want to use the following functions as well if you're writing a
+--   You might want to use the following functions as well if you're writing a 
 --   custom mapvote:
 --
 --   JB:Mapvote_ExtendCurrentMap()
@@ -57,7 +11,136 @@
 --------------------------------------------------------------------------------------
 
 
-/*
+local defaulthp = 700		-- Vehicle health
+local smokepoint = 400	-- Point at which vehicles begin to smoke
+
+local timemin = 5			-- Minimum time between the vehicle's health reaching 0 and detonation
+local timemax = 20		-- Maximum time between the vehicle's health reaching 0 and detonation
+
+local smokeeffect = "smoke_burning_engine_01"		-- Vehicle smoke effect
+local explodeeffect = "explosion_huge_f"				-- Explosion effect
+
+
+function JB:MakeChoppaAndJeep()
+
+	
+	local fly1 = ents.Create("sent_sakariashelicopter")
+	fly1:SetPos(Vector(-1714,175,580))
+	fly1:SetAngles(Angle(0,90,0))
+	fly1:Spawn()
+	fly1:Activate()
+	
+	
+	
+	local car1 = ents.Create("prop_vehicle_jeep")
+	car1:SetModel("models/LoneWolfie/chev_tahoe.mdl")
+	car1.VehicleTable = list.Get( "Vehicles" )[ "Chevy Tahoe Police"] -- this is the only important line
+	car1:SetKeyValue("vehiclescript","scripts/vehicles/lwcars/chev_tahoe.txt")  
+	car1:SetPos(Vector(273,1875,-122))
+	car1:SetAngles(Angle(0,90,-0))
+	car1:SetHealth(defaulthp)
+	car1.Screwed = false
+	car1.Hurt = false
+	car1:Spawn()
+	car1:Activate()
+		
+		
+
+		
+
+end
+
+function JB:MakeSomeZombies()
+	print("Zombies staged")
+	
+	for i=1,10 do
+		local ent1 = ents.Create( "npc_zombie" )
+		ent1:SetPos( Vector(0,2800 + (i * 30), -140 ))
+		ent1:Spawn()
+		ent1:Activate()
+	end
+
+	for i=1,10 do
+		local ent1 = ents.Create( "npc_fastzombie" )
+		ent1:SetPos( Vector(30,2800 + (i * 30), -140 ))
+		ent1:Spawn()
+		ent1:Activate()
+	end
+
+	for i=1,5 do
+		local ent1 = ents.Create( "npc_zombie_torso" )
+		ent1:SetPos( Vector(60,2800 + (i * 30), -140 ))
+		ent1:Spawn()
+		ent1:Activate()
+	end
+
+	for i=6,10 do
+		local ent1 = ents.Create( "npc_fastzombie_torso" )
+		ent1:SetPos( Vector(60,2800 + (i * 30), -140 ))
+		ent1:Spawn()
+		ent1:Activate()
+	end
+	
+	
+
+	
+end
+
+
+
+// Make cars take damage and blow up if they are damaged too much.
+hook.Add("EntityTakeDamage", "VehicleHPHook", function( ent, dmginfo ) 
+	if not ent:IsVehicle() then return end
+	
+		local damage = dmginfo:GetDamage()
+		
+		// Compensate for weird vehicle damage system, make explosives do more damage.
+		if dmginfo:IsBulletDamage() then ent:SetHealth(ent:Health() - (10000 * damage)) 
+			elseif dmginfo:IsExplosionDamage() then ent:SetHealth(ent:Health() - (8 * damage))
+			else ent:SetHealth(ent:Health() - damage) 
+		end
+		
+	
+		// This was used for testing purposes, spits out a bunch of damage info to the console.
+		// print(ent:GetAttachments(), dmginfo:GetDamageType(), dmginfo:GetAmmoType(), damage, dmginfo:IsBulletDamage())
+		 
+		// Make the vehicle smoke if health gets low.
+		if ent:IsValid() and ent:Health() <= smokepoint and ent.Hurt == false then
+			local id = ent:LookupAttachment("vehicle_engine")
+			ent.Hurt = true // Let it know that the car is hurt so it doesn't add the effect the next time it gets damaged.
+			ParticleEffectAttach( smokeeffect, PATTACH_POINT_FOLLOW, ent, id )
+		end 
+			
+		// Once health drops to 0 or below, light the car on fire, kick everyone out, and blow it up.
+		if ent:IsValid() and ent:Health() <= 0 and ent.Screwed == false then
+				
+			ent.Screwed = true // Let it know that the car is going to blow up and the timer is started (so it doesn't keep on restarting)
+			
+			local randomtime = math.random(timemin,timemax)
+			
+			ent:Ignite( randomtime, 100 )
+			
+			// Boot the driver out
+			--if ent:GetDriver():IsValid() then ent:GetDriver():ExitVehicle(ent) end 
+			
+			// Blow it up after a set time.
+			timer.Create("CarExplode", randomtime, 1, function() 
+				if not ent:IsValid() then return end
+				local explosion = ents.Create("env_explosion")
+				ParticleEffect(explodeeffect,ent:GetPos(),Angle(0,0,0),nil) 
+				explosion:SetPos(ent:GetPos())
+				explosion:SetOwner(attacker)
+				explosion:Spawn()
+				explosion:SetKeyValue("iMagnitude", "250")
+				explosion:Fire("Explode", 0, 0)
+				ent:Remove()
+			end)
+		end 
+end)
+
+
+
+/* 
 
 Compatability hooks - implement these in your admin mods
 
@@ -67,36 +150,37 @@ function JB.Gamemode.JailBreakStartMapvote(rounds_passed,extentions_passed) // h
 	return false // return true in your own mapvote function, else there won't be a pause between rounds!
 end
 
-/*
+/* 
 
 State chaining
 
 */
-local chainState;
-if SERVER then
-	local stateTime = 0;
-	local stateCallback;
-	hook.Add("Think","JB.Think.StateLogic",function()
-		if stateTime > 0 and stateTime < CurTime() then
-			JB:DebugPrint("State chain ended")
-
-			stateTime = 0
-			stateCallback()
-		end
-	end)
-	chainState=function(state,time,callback)
-		JB:DebugPrint("State chained: "..tostring(state).." ["..tostring(time).." s]["..tostring(callback).."]")
-
-		JB.State = state;
-
-		stateTime=CurTime()+time;
-		stateCallback=callback;
+local timerSequence = 1
+local function chainState(state,stateTime,stateCallback)
+	JB.State = state;
+	local oldTimerName = "JB.StateTimerNew" -- .. tostring(timerSequence)
+	--timerSequence = timerSequence + 1
+	local newTimerName = "JB.StateTimerNew" -- .. tostring(timerSequence)
+	
+	if timer.Exists(oldTimerName) then
+		timer.Remove(oldTimerName);
 	end
-
-	concommand.Add("testtime",function()
-		print(stateTime,CurTime(),stateTime<CurTime())
-	end)
+	
+	timer.Create(newTimerName,stateTime,1,stateCallback);
+	
+	
+	
+	-- Map / state specific stuff
+	
+	if (JB.State == STATE_SETUP and game.GetMap() == "jb_new_summer_v2") then
+		timer.Create("JB.StateTimer.Zombies",300,1,JB.MakeSomeZombies)
+		timer.Create("JB.StateTimer.Choppa",120,1,JB.MakeChoppaAndJeep)
+	end
+		
 end
+
+
+
 
 /*
 
@@ -119,9 +203,9 @@ function JB:Mapvote_StartMapVote()			// You can call this from your admin mod/ma
 	return false;
 end
 
-/*
+/* 
 
-Enums
+Enums 
 
 */
 STATE_IDLE = 1; -- when the map loads, we wait for everyone to join
@@ -131,7 +215,7 @@ STATE_LASTREQUEST = 4; -- last request taking place, special rules apply
 STATE_ENDED = 5; -- round ended, waiting for next round to start
 STATE_MAPVOTE = 6; -- voting for a map, will result in either a new map loading or restarting the current without reloading
 
-/*
+/* 
 
 Network strings
 
@@ -143,106 +227,6 @@ end
 
 /*
 
-Special days
-
-*/
-local function resetSpecial()
-	if SERVER then
-		game.ConsoleCommand("sv_gravity 600;\n")
-		game.ConsoleCommand("sv_friction 8;\n")
-	elseif CLIENT then
-
-	end
-end
-
-if SERVER then
-	JB.SpecialDays = {
-		["Low-Gravity Knife Party"] = function()
-			game.ConsoleCommand("sv_gravity 200;\n")
-			game.ConsoleCommand("sv_friction 3;\n")
-
-			for k,v in ipairs(team.GetPlayers(TEAM_PRISONER))do
-				v:SetJumpPower(400)
-				v:StripWeapons()
-				v:Give("weapon_jb_knife")
-			end
-
-			for k,v in ipairs(team.GetPlayers(TEAM_GUARD))do
-				v:SetJumpPower(400)
-				v:StripWeapons()
-				v:Give("weapon_jb_knife")
-			end
-
-			for k,v in ipairs(ents.GetAll())do
-				if IsValid(v) and v.GetClass and string.Left(v:GetClass(),string.len("weapon_jb_")) == "weapon_jb_" and v:GetClass() ~= "weapon_jb_knife" then
-					v:Remove()
-				end
-			end
-
-			for k,v in ipairs(ents.FindByClass("func_door"))do
-				v:Fire("Open",1)
-			end
-			for k,v in ipairs(ents.FindByClass("func_door_rotating"))do
-				v:Fire("Open",1)
-			end
-			for k,v in ipairs(ents.FindByClass("func_movelinear"))do
-				v:Fire("Open",1)
-			end
-		end,
-		["Guns for everyone"] = function()
-			for k,v in ipairs(team.GetPlayers(TEAM_PRISONER))do
-				v:Give("weapon_jb_deagle")
-				v:SelectWeapon("weapon_jb_deagle")
-			end
-
-			for k,v in ipairs(ents.FindByClass("func_door"))do
-				v:Fire("Open",1)
-			end
-			for k,v in ipairs(ents.FindByClass("func_door_rotating"))do
-				v:Fire("Open",1)
-			end
-			for k,v in ipairs(ents.FindByClass("func_movelinear"))do
-				v:Fire("Open",1)
-			end
-		end,
-		["Super heros"] = function()
-			for k,v in ipairs(team.GetPlayers(TEAM_PRISONER))do
-				v:SetRunSpeed(600)
-				v:SetWalkSpeed(270)
-				v:SetJumpPower(400)
-			end
-
-			for k,v in ipairs(ents.FindByClass("func_door"))do
-				v:Fire("Open",1)
-			end
-			for k,v in ipairs(ents.FindByClass("func_door_rotating"))do
-				v:Fire("Open",1)
-			end
-			for k,v in ipairs(ents.FindByClass("func_movelinear"))do
-				v:Fire("Open",1)
-			end
-		end,
-		["Slow guards"] = function()
-			for k,v in ipairs(team.GetPlayers(TEAM_GUARD))do
-				v:SetRunSpeed(100)
-				v:SetWalkSpeed(100)
-			end
-
-			for k,v in ipairs(ents.FindByClass("func_door"))do
-				v:Fire("Open",1)
-			end
-			for k,v in ipairs(ents.FindByClass("func_door_rotating"))do
-				v:Fire("Open",1)
-			end
-			for k,v in ipairs(ents.FindByClass("func_movelinear"))do
-				v:Fire("Open",1)
-			end
-		end
-	}
-end
-
-/*
-
 Round System
 
 */
@@ -250,19 +234,51 @@ JB.ThisRound = {};
 local wantStartup = false;
 function JB:NewRound(rounds_passed)
 	rounds_passed = rounds_passed or JB.RoundsPassed;
+	collectgarbage("collect");
 
 	JB.ThisRound = {};
-
+	
 	if SERVER then
-		game.CleanUpMap();
-
+		game.CleanUpMap();	
+		
+		if timer.Exists("JB.StateTimer.Zombies") then
+			timer.Stop("JB.StateTimer.Zombies");
+			timer.Destroy("JB.StateTimer.Zombies");
+			
+		end
+		
+		if timer.Exists("JB.StateTimer.Choppa") then
+			timer.Remove("JB.StateTimer.Choppa");
+		end
+	
 		rounds_passed = rounds_passed + 1;
 		JB.RoundsPassed = rounds_passed;
 		JB.RoundStartTime = CurTime();
-
+		
+		
+		-- Deagle Day!
+		if math.random(1,15) == 1 then
+			timer.Simple(10,function()
+				
+				for k,v in pairs(team.GetPlayers(TEAM_PRISONER))do
+					v:Give("weapon_jb_deagle"); -- give the player a rando waeapon from our table.
+					v:SendNotification("Pssst!  Today is a Deagle Day!")
+				end
+					
+			end);
+		end
+		
+		-- Low Grav Day!
+		if math.random(1,15) == 1 then
+			JB:BroadcastNotification("Low-Gravity Day!!")
+			RunConsoleCommand("sv_gravity", "60");
+		else
+			RunConsoleCommand("sv_gravity", "600");
+		end
+		
 		chainState(STATE_SETUP,tonumber(JB.Config.setupTime),function()
 			JB:DebugPrint("Setup finished, round started.")
-			chainState(STATE_PLAYING,(600) - tonumber(JB.Config.setupTime),function()
+			chainState(STATE_PLAYING,(10*60) - tonumber(JB.Config.setupTime),function()
 				JB:EndRound();
 			end);
 
@@ -271,41 +287,18 @@ function JB:NewRound(rounds_passed)
 				JB:BroadcastNotification("Today is a freeday");
 			end
 		end);
-
-		if JB.RoundsPassed == 1 then
-			local count=table.Count(JB.SpecialDays)
-			local which=math.random(1,count)
-			count=0;
-			for k,v in pairs(JB.SpecialDays)do
-				count=count+1
-				if count == which then
-					which=k;
-					break;
-				end
-			end
-
-
-			if JB.SpecialDays[which] then
-				JB:BroadcastNotification("First round: "..which)
-				JB.SpecialDays[which]();
-				JB.ThisRound.IsSpecialRound = true;
-			end
-		end
-
+		
 		if IsValid(JB.TRANSMITTER) then
 			JB.TRANSMITTER:SetJBWarden_PVPDamage(false);
 			JB.TRANSMITTER:SetJBWarden_ItemPickup(false);
 			JB.TRANSMITTER:SetJBWarden_PointerType("0");
 			JB.TRANSMITTER:SetJBWarden(NULL);
 		end
-
+		
 		JB:BalanceTeams()
-
-		JB.Util.iterate(player.GetAll()):SetRebel(false):Spawn();
-		timer.Simple(1,function()
-			JB.Util.iterate(player.GetAll()):Freeze(false);
-		end)
-
+		
+		JB.Util.iterate(player.GetAll()):SetRebel(false):SetGang(0):SetMadeGangs(false):Spawn();
+		
 		net.Start("JB.SendRoundUpdate"); net.WriteInt(STATE_SETUP,8); net.WriteInt(rounds_passed,32); net.Broadcast();
 	elseif CLIENT and IsValid(LocalPlayer()) then
 		notification.AddLegacy("Round "..rounds_passed,NOTIFY_GENERIC);
@@ -316,25 +309,15 @@ function JB:NewRound(rounds_passed)
 	hook.Call("JailBreakRoundStart",JB.Gamemode,JB.RoundsPassed);
 end
 function JB:EndRound(winner)
-	if JB.ThisRound.IsSpecialRound then
-		resetSpecial()
-	end
-
 	if SERVER then
 		if JB.RoundsPassed >= tonumber(JB.Config.roundsPerMap) and JB:Mapvote_StartMapVote() then
 			return; // Halt the round system; we're running a custom mapvote!
 		end
 
 		chainState(STATE_ENDED,5,function()
-			JB.Util.iterate(player.GetAll()):Freeze(true);
 			JB:NewRound();
 		end);
-
-		net.Start("JB.GetLogs");
-		net.WriteTable(JB.ThisRound and JB.ThisRound.Logs or {});
-		net.WriteBit(true);
-		net.Broadcast(p);
-
+			
 		net.Start("JB.SendRoundUpdate"); net.WriteInt(STATE_ENDED,8); net.WriteInt(winner or 0, 8); net.Broadcast();
 	elseif CLIENT then
 		notification.AddLegacy(winner == TEAM_PRISONER and "Prisoners win" or winner == TEAM_GUARD and "Guards win" or "Draw",NOTIFY_GENERIC);
@@ -353,16 +336,16 @@ if CLIENT then
 		end
 	end);
 elseif SERVER then
-	timer.Create("JBRoundEndLogic",1,0,function()
+	timer.Create("JB.Time.RoundEndLogic",1,0,function()
 		if JB.State == STATE_IDLE and wantStartup then
 			if #team.GetPlayers(TEAM_GUARD) >= 1 and #team.GetPlayers(TEAM_PRISONER) >= 1 then
 				JB:DebugPrint("State is currently idle, but people have joined; Starting round 1.")
 				JB:NewRound();
 			end
 		end
-
-		if (JB.State ~= STATE_PLAYING and JB.State ~= STATE_SETUP and JB.State ~= STATE_LASTREQUEST) or #team.GetPlayers(TEAM_GUARD) < 1 or #team.GetPlayers(TEAM_PRISONER) < 1 then return end
-
+	
+		if (JB.State != STATE_PLAYING and JB.State != STATE_SETUP and JB.State != STATE_LASTREQUEST) or #team.GetPlayers(TEAM_GUARD) < 1 or #team.GetPlayers(TEAM_PRISONER) < 1 then return end
+		
 		local count_guard = JB:AliveGuards();
 		local count_prisoner = JB:AlivePrisoners();
 
@@ -387,7 +370,7 @@ hook.Add("InitPostEntity","JB.InitPostEntity.SpawnStateTransmit",function()
 		JB.TRANSMITTER = ents.Create("jb_transmitter_state");
 		JB.TRANSMITTER:Spawn();
 		JB.TRANSMITTER:Activate();
-
+		
 		chainState(STATE_IDLE,tonumber(JB.Config.joinTime),function()
 			wantStartup = true; -- request a startup.
 		end);
@@ -447,7 +430,7 @@ JB._IndexCallback.State = {
 		else
 			Error("Can not set state!")
 		end
-	end
+	end 
 }
 
 // Round-related methods.
@@ -462,7 +445,7 @@ JB._IndexCallback.RoundsPassed = {
 			Error("Can not set rounds passed!");
 		end
 	end
-}
+} 
 JB._IndexCallback.RoundStartTime = {
 	get = function()
 		return IsValid(JB.TRANSMITTER) and JB.TRANSMITTER.GetJBRoundStartTime and  JB.TRANSMITTER:GetJBRoundStartTime() or 0;
@@ -484,18 +467,18 @@ JB._IndexCallback.LastRequest = {
 	set = function(tab)
 		if not IsValid(JB.TRANSMITTER) or not SERVER then return end
 
-		if not tab or type(tab) ~= "table" or not tab.type or not JB.ValidLR(JB.LastRequestTypes[tab.type]) or not IsValid(tab.prisoner) or not IsValid(tab.guard) then
+		if not tab or type(tab) != "table" or not tab.type or not JB.ValidLR(JB.LastRequestTypes[tab.type]) or not IsValid(tab.prisoner) or not IsValid(tab.guard) then 
 			JB.TRANSMITTER:SetJBLastRequestPicked("0");
 			if not pcall(function() JB:DebugPrint("Attempted to select invalid LR: ",tab.type," ",tab.prisoner," ",tab.guard," ",type(tab)); end) then JB:DebugPrint("Unexptected LR sequence abortion!"); end
-			return
+			return 
 		end
-
+		
 		JB.TRANSMITTER:SetJBLastRequestPrisoner(tab.prisoner);
 		JB.TRANSMITTER:SetJBLastRequestGuard(tab.guard);
 		JB.TRANSMITTER:SetJBLastRequestPicked(tab.type);
-
+		
 		chainState(STATE_LASTREQUEST,180,function() JB:EndRound() end)
-
+		
 		JB.RoundStartTime = CurTime();
 
 		JB:BroadcastNotification(tab.prisoner:Nick().." requested a "..JB.LastRequestTypes[tab.type]:GetName(),{tab.prisoner,tab.guard})
@@ -530,7 +513,7 @@ JB._IndexCallback.LastRequestPlayers = {
 	end
 }
 
-/*
+/* 
 
 Prevent Cleanup
 

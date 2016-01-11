@@ -108,7 +108,7 @@ function JB.MENU_WARDEN()
 		frame = vgui.Create("JB.Frame");
 		frame:SetTitle("Claim warden");
 		
-		local lbl = Label("Do not claim warden if you don't own a microphone or can't use your microphone.\nDistorted microphone owners and children ('squeekers') are not allowed to claim warden.",frame);
+		local lbl = Label("Do not claim warden if you don't own a microphone or can't use your microphone.\nDistorted microphone owners are not allowed to claim warden.",frame);
 		lbl:SetFont("JBSmall");
 		lbl:SetColor(color_text);
 		lbl:SizeToContents();

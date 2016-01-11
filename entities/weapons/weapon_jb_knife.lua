@@ -36,7 +36,7 @@ if SERVER then
    SWEP.Weight          = 5;
    SWEP.AutoSwitchTo    = false;
    SWEP.AutoSwitchFrom     = false;
-
+   
 end
 
 if CLIENT then
@@ -60,11 +60,11 @@ SWEP.PrintName            = "Knife"
 
 SWEP.UseHands = true;
 SWEP.ViewModel 				= "models/weapons/cstrike/c_knife_t.mdl"
-SWEP.WorldModel 				= "models/weapons/w_knife_t.mdl"
+SWEP.WorldModel 				= "models/weapons/w_knife_t.mdl" 
 SWEP.Weight			= 5
 SWEP.DrawCrosshair		= false
 SWEP.ViewModelFlip		= false
-SWEP.Primary.Damage = 25
+SWEP.Primary.Damage = 40
 SWEP.Primary.ClipSize		= -1
 SWEP.Primary.DefaultClip	= -1
 SWEP.Primary.Automatic		= true
@@ -76,11 +76,29 @@ SWEP.Secondary.Automatic	= true
 SWEP.Secondary.Ammo		= "none"
 SWEP.Secondary.Delay = 5
 SWEP.HoldType = "knife"
-SWEP.HitDistance = 50;
+SWEP.HitDistance = 49;
+
+util.PrecacheSound("weapons/knife/knife_deploy1.wav");
+util.PrecacheSound("weapons/knife/knife_hitwall1.wav");
+util.PrecacheSound("weapons/knife/knife_hit1.wav");
+util.PrecacheSound("weapons/knife/knife_hit2.wav");
+util.PrecacheSound("weapons/knife/knife_hit3.wav");
+util.PrecacheSound("weapons/knife/knife_hit4.wav");
+util.PrecacheSound("weapons/iceaxe/iceaxe_swing1.wav");
+util.PrecacheSound("weapons/knife/knife_slash1.wav");
 
 local sound_single =Sound("weapons/knife/knife_slash1.wav")
 function SWEP:Initialize()
    self:SetWeaponHoldType(self.HoldType)
+   
+   self.hitSound = Sound("weapons/knife/knife_hitwall1.wav");
+   --self.fleshSound = Sound("weapons/knife/knife_hit1.wav");
+   --self.fleshSounds = {
+	--	Sound("weapons/knife/knife_hit1.wav"),
+	--	Sound("weapons/knife/knife_hit2.wav"),
+	--	Sound("weapons/knife/knife_hit3.wav"),
+	--	Sound("weapons/knife/knife_hit4.wav")
+	--};
 end
 function SWEP:PrimaryAttack()
    self.Weapon:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
@@ -102,7 +120,7 @@ function SWEP:PrimaryAttack()
 		filter = self.Owner
 	} )
 
-	if ( !IsValid( tr_main.Entity ) ) then
+	if ( !IsValid( tr_main.Entity ) ) then 
 		tr_main = util.TraceHull( {
 			start = self.Owner:GetShootPos(),
 			endpos = self.Owner:GetShootPos() + self.Owner:GetAimVector() * self.HitDistance,
@@ -116,24 +134,39 @@ function SWEP:PrimaryAttack()
    self.Weapon:EmitSound(sound_single)
 
    if IsValid(hitEnt) or tr_main.HitWorld then
-      self.Weapon:SendWeaponAnim( ACT_VM_HITCENTER )
+		self.Weapon:SendWeaponAnim( ACT_VM_MISSCENTER )
+		
+		
+		if SERVER then
+			 if (IsValid(hitEnt) and hitEnt:IsPlayer()) then
+				--hitEnt:EmitSound( table.Random(self.fleshSounds) );
+				--hitEnt:EmitSound( self.fleshSound );
+				hitEnt:EmitSound("weapons/knife/knife_hit"..math.random(1, 4)..".wav")
+			 else
+				self.Owner:EmitSound(self.hitSound);
+			 end
+		
+	  
 
-      if SERVER and IsFirstTimePredicted() then
-         local edata = EffectData()
-         edata:SetStart(spos)
-         edata:SetOrigin(tr_main.HitPos)
-         edata:SetNormal(tr_main.Normal)
-         edata:SetEntity(hitEnt)
-
-         if hitEnt:IsPlayer() or hitEnt:GetClass() == "prop_ragdoll" then
-            util.Effect("BloodImpact", edata)
-            self.Owner:FireBullets({Num=1, Src=spos, Dir=self.Owner:GetAimVector(), Spread=Vector(0,0,0), Tracer=0, Force=1, Damage=0});
-         else
-            util.Effect("Impact", edata)
-         end
-      end
+			--if IsFirstTimePredicted() then
+				 local edata = EffectData()
+				 edata:SetStart(spos)
+				 edata:SetOrigin(tr_main.HitPos)
+				 edata:SetNormal(tr_main.Normal)
+				 edata:SetEntity(hitEnt)
+		 
+				 if hitEnt:IsPlayer() or hitEnt:GetClass() == "prop_ragdoll" then
+					util.Effect("BloodImpact", edata)
+					self.Owner:FireBullets({Num=1, Src=spos, Dir=self.Owner:GetAimVector(), Spread=Vector(0,0,0), Tracer=0, Force=1, Damage=0});
+				 else
+					util.Effect("Impact", edata)
+					--util.Decal("ManhackCut", tr_main.HitPos + tr_main.HitNormal, tr_main.HitPos - tr_main.HitNormal);
+				 end
+			--end
+		end
    else
       self.Weapon:SendWeaponAnim( ACT_VM_MISSCENTER )
+	  --self.Weapon:EmitSound(sound_single)
    end
 
 
@@ -147,9 +180,9 @@ function SWEP:PrimaryAttack()
          dmg:SetInflictor(self.Weapon)
          dmg:SetDamageForce(self.Owner:GetAimVector() * 1500)
          dmg:SetDamagePosition(self.Owner:GetPos())
-         dmg:SetDamageType(DMG_CLUB)
+         dmg:SetDamageType(DMG_SLASH)
 
-         hitEnt:DispatchTraceAttack(dmg, spos + (self.Owner:GetAimVector() * 3), sdest)
+         hitEnt:DispatchTraceAttack(dmg, spos + (self.Owner:GetAimVector() * 3), sdest)      
       end
    end
 

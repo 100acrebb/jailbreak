@@ -36,7 +36,7 @@ if IsValid(clientModels["weapon_jb_knife"]) then
 	clientModels["weapon_jb_knife"]:SetNoDraw(true);
 end
 
-local primWeps = {"weapon_jb_weapon_jb_ak47","weapon_jb_awp","weapon_jb_m3","weapon_jb_m4a1","weapon_jb_mp5navy","weapon_jb_scout","weapon_jb_scout_ns","weapon_jb_tmp","weapon_jb_awp","weapon_jb_famas","weapon_jb_galil","weapon_jb_mac10","weapon_jb_p90","weapon_jb_sg552","weapon_jb_ump"};
+local primWeps = {"weapon_jb_weapon_jb_ak47","weapon_jb_awp","weapon_jb_m3","weapon_jb_m4a1","weapon_jb_mp5navy","weapon_jb_scout","weapon_jb_scout_ns","weapon_jb_tmp","weapon_jb_awp","weapon_jb_famas","weapon_jb_galil","weapon_jb_mac10","weapon_jb_p90","weapon_jb_sg552","weapon_jb_ump","weapon_jb_m3", "weapon_jb_xm1014"};
 local secoWeps = {"weapon_jb_deagle","weapon_jb_fiveseven","weapon_jb_glock","weapon_jb_usp"};
 
 local wmeta = FindMetaTable("Weapon");
@@ -49,7 +49,7 @@ end
 
 function GM:CheckWeaponTable(class,model)
 	if clientModels[class] then return end
-
+	
 	timer.Simple(0,function()
 		clientModels[class] = ClientsideModel(model,RENDERGROUP_OPAQUE);
 		if IsValid(clientModels[class]) then
@@ -108,9 +108,9 @@ hook.Add("PostPlayerDraw","JB.PostPlayerDraw.DrawWeapons",function(p)
 					mdl:DrawModel();
 				end
 			end
-		elseif not mdl and IsValid(v) and weapons.Get( v:GetClass( ) ) then
-			GAMEMODE:CheckWeaponTable( v:GetClass() ,
+		elseif not mdl then
+			GAMEMODE:CheckWeaponTable( v:GetClass() , 
 			weapons.Get( v:GetClass( ) ).WorldModel );
-		end
+		end	
 	end
 end)

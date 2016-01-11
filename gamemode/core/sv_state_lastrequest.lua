@@ -39,6 +39,8 @@ end
 concommand.Add("jb_lastrequest_start",function(p,c,a)
 	if not JB:CanLastRequest() or not p:Team() == TEAM_PRISONER or not p:Alive() or not a or not a[1] or not a[2] then return end
 	
+	
+	
 	local lr = a[1];
 	if not JB.ValidLR(JB.LastRequestTypes[lr]) then return end
 

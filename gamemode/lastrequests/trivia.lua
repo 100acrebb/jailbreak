@@ -1,73 +1,54 @@
--- ####################################################################################
--- ##                                                                                ##
--- ##                                                                                ##
--- ##     CASUAL BANANAS CONFIDENTIAL                                                ##
--- ##                                                                                ##
--- ##     __________________________                                                 ##
--- ##                                                                                ##
--- ##                                                                                ##
--- ##     Copyright 2014 (c) Casual Bananas                                          ##
--- ##     All Rights Reserved.                                                       ##
--- ##                                                                                ##
--- ##     NOTICE:  All information contained herein is, and remains                  ##
--- ##     the property of Casual Bananas. The intellectual and technical             ##
--- ##     concepts contained herein are proprietary to Casual Bananas and may be     ##
--- ##     covered by U.S. and Foreign Patents, patents in process, and are           ##
--- ##     protected by trade secret or copyright law.                                ##
--- ##     Dissemination of this information or reproduction of this material         ##
--- ##     is strictly forbidden unless prior written permission is obtained          ##
--- ##     from Casual Bananas                                                        ##
--- ##                                                                                ##
--- ##     _________________________                                                  ##
--- ##                                                                                ##
--- ##                                                                                ##
--- ##     Casual Bananas is registered with the "Kamer van Koophandel" (Dutch        ##
--- ##     chamber of commerce) in The Netherlands.                                   ##
--- ##                                                                                ##
--- ##     Company (KVK) number     : 59449837                                        ##
--- ##     Email                    : info@casualbananas.com                          ##
--- ##                                                                                ##
--- ##                                                                                ##
--- ####################################################################################
+local triviaquestions  = {
+	{"How many major-league baseball teams are there?","30"},
+	{"The act of plucking, rather than bowing, violin strings, is known by what Italian word?","Pizzicato"},
+	{"Absolute zero registers at how many degrees Celsius?","-273"},
+	{"What is the tallest mountain in Colorado?","ELBERT"},
+	{"What beer is marketed as The king of beers?","Budweiser"},
+{"What name is given to a female swan?","Pen"},
+{"Name the frontman of the Kaiser Chiefs who replaced Danny O'Donoghue as judge and mentor on 'The Voice UK'?","Ricky Wilson"},
+{"Which is the world's second largest French-speaking city?","Montreal"},
+{"What angle is formed by the hands of a clock at 4 o'clock?","120"},
+{"England's national rugby union side play their home games at which ground?","Twickenham"},
+{"In what year was Margaret Thatcher first elected Prime Minister?","1979"},
+{"Which 1851 novel was first published in Britain under the title The Whale?","Moby Dick"},
+{"How many toes does a dog have?","18"},
+{"Where would you find the Sea of Tranquillity?","Moon"},
+{"In the music video for The Pogues 'Fairytale of New York', which famous American actor born on February 18, 1964 plays the police officer who arrests Shane McGowan?","Matt Dillon"},
+{"What was the first country to win the World Cup twice?","Italy"},
+{"Who was born Leslie Townes Hope?","Bob Hope"},
+{"In what television show would you find The Woolpack?","Emmerdale"},
+{"What colour would Coca Cola be if you were to remove the artificial colouring?","Green"},
+{"How many legs do butterflies have?","6"},
+{"Which British prime minister was awarded the Nobel Prize for Literature?","Churchill"},
+{"How is the number 5 written in Roman numerals?","V"},
+{"Which is the only country to lie entirely within the Alps?","Liechtenstein"},
+{"In Bingo, what number is referred to as ‘Doctor’s Orders’?","9"},
+{"Which city was the capital of Australia from 1901 to 1927?","Melbourne"},
+{"Which three-digit number refers to the NOT FOUND error message indicating that a HTTP server cannot find the requested item?","404"},
+{"In American football, how many points is a touchdown worth?","6"},
+{"What international news magazine became an online published magazine only in January 2013?","Newsweek"},
+{"Hushabye Mountain featured in which musical film?","Chitty Chitty Bang Bang"},
+{"Who painted the ceiling of the Sistine Chapel?","Michelangelo"},
+{"What Tarantino movie won the Best Picture or prestigious Palme d'Or at the Cannes Film Festival in 1994?","Pulp Fiction"},
+{"What is a baby seal called?","Pup"},
+{"In Darts, how much is the Outer Bull worth?","25"},
+{"What is the surname of the singer Rihanna born February 20, 1988?","Fenty"},
+{"How many keys on a standard piano?","88"},
+{"What colour to do you get when you mix red and white?","Pink"},
+{"What is Pakistan's currency?","Rupee"},
+{"Who were the backing group for Bill Hailey?","Comets"},
+{"Which capital city lies on the Potomac River?","Washington"},
+{"Whom did former Beatle star Paul McCartney wed in 2011?","Nancy Shevell"},
+{"The pot-bellied pig is a breed of domesticated pig originating in which Asian country?","Vietnam"},
+{"What is the square root of 16?","4"},
+{"In what country are Pikeur cigars made?","Holland"},
+{"What is the capital of Nepal?","Kathmandu"},
+{"How many dots are there in total on a pair of dice?","42"},
+{"At which ski resort was Michael Schumacher seriously injured during late 2013?","Meribel"}
+
+}
 
 
-local randomQuestions = {
-	{ // Questions about the Jail Break gamemode
-		{question="Who created the first version of Jail Break for Garry's Mod?",answer="excl"},
-		{question="What does LR stand for?",answer="last request"},
-		{question="Who is the person in charge of the prison?",answer="warden"},
-	},
-	{ // Questions about internet culture, games, etc...
-		{question="In the game ‘Metal Gear Solid’,who is the twin brother of Solid Snake?",answer="Liquid Snake"},
-		{question="In video gaming, what is the name of the princess whom Mario repeatedly stops Bowser from kidnapping?",answer="Princess Peach"},
-		{question="In the game ‘Mortal Kombat’, what phrase is heard when Scorpion uses his spear?",answer="Get over here"},
-		{question="What is the name of the gang member that video game ‘Grand Theft Auto: San Andreas’ revolves around?",answer="CJ"},
-		{question="How many rows of aliens are there usually at the start of a ‘Space Invaders’ game?",answer="5"},
-		{question="How many square blocks is each game piece composed of in the game of ‘Tetris’?",answer="4"},
-		{question="What is the name of the fictional English archaeologist in the game ‘Tomb Raider’?",answer="Lara Croft"},
-		{question="In the game ‘Doom’, which planet is the space marine posted to after assaulting his commanding officer?",answer="Mars"},
-		{question="Which Playstation 2 game, released in 2003, was banned by several countries and implicated by the media in a murder, due to its graphic violence?",answer="Manhunt"},
-		{question="Which 1997 Playstation game’s opening song is a Chemical Brothers remix of the Manic Street Preachers song ‘Everything Must Go’?",answer="Gran Turismo"},
-		{question="Which 1986 Nintendo game is set in the fantasy land of Hyrule, and centres on a boy named Link?",answer="Zelda"},
-		{question="In video games, what colour is Pac-Man?",answer="yellow"},
-		{question="‘Black Ops’ is the subtitle of which game?",answer="Call of Duty"},
-		{question="Pikachu is one of the species of creatures in which series of games?",answer="Pokemon"},
-		{question="Jumpman’s goal is to save the Lady from the giant ape in which 1981 arcade game?",answer="Donkey Kong"},
-		{question="The Covenant are fictional military alien races in which game series?",answer="Halo"},
-		{question="What color is the most autistic video game hedgehog?",answer="blue"},
-	},
-	{ // Questions about human subjects, such as history and geography 
-		{question="Name a game in which two teams kick a ball around.",answer="football"},
-		{question="Who wrote Julius Caesar, Macbeth and Hamlet?",answer="Shakespeare"},
-		{question="When was Elvis' first ever concert?",answer="1954"},
-		{question="In which city is Hollywood?",answer="Los Angeles"},
-		{question="Who was the director of the film 'Psycho'?",answer="Hitchcock"},
-		{question="What's the smallest country in the world?",answer="Vatican City"},
-		{question="What's the capital of Finland?",answer="Helsinki"},
-		{question="How many legs has a spider got?",answer="8"},
-	},
-	"mathproblem"
-};
 
 local question,answer;
 
@@ -78,46 +59,30 @@ local LR = JB.CLASS_LR();
 LR:SetName("Trivia");
 LR:SetDescription("After the countdown, a random question about a random subject will be asked. The first person to answer this question correctly in chat will win the last request, the loser will be killed.");
 LR:SetStartCallback(function(prisoner,guard)
-	local subject = randomQuestions[math.random(1,#randomQuestions)];
+
 	
-	if type("subject") == "string" and subject == "mathproblem" then
-		local operationsFirst = {" + "," - "};
-		local operationsSecond = {" * "};
-
-		question=tostring(math.random(1,10));
-
-		local typ = math.random(1,4);
-		if typ == 1 or typ == 2 then
-			question=question..table.Random(operationsFirst)..tostring(math.random(1,10));
-		end
-
-		local div = 0;
-
-		if typ == 2 or typ == 3 or typ == 4 then
-			div = math.random(1,10);
-			question=question..table.Random(operationsSecond)..(typ == 4 and "( " or "")..tostring(div);
-		end
-
-		if typ == 3 then
-			question=question..table.Random(operationsSecond)..tostring(math.random(1,10))
-		elseif typ == 4 then
-			local sec = math.random(-10,10);
-			if div-sec == 0 then
-				sec = sec+math.random(1,5);
-			end
-			question=question..table.Random(operationsFirst)..sec.." )";
-		end
-
-		RunString("_RTN_RUNSTRING_JB_LR_TRIVIA_QUESTION = "..question..";");
-		answer = _RTN_RUNSTRING_JB_LR_TRIVIA_QUESTION;
-		question=question.." = "
-		
-	elseif type(subject) == "table" then
-		local rnd = table.Random(subject);
-		question = rnd.question; // TODO: add more questions
-		answer = rnd.answer;
-	end
-
+	--[[local url = "http://api.soundcloud.com/resolve.json?url="..rawURL.."&client_id=92373aa73cab62ccf53121163bb1246e"
+    http.Fetch(url,
+      function(body, len, headers, code)
+          entry = util.JSONToTable(body)
+          if !entry.streamable then
+              cl_PPlay.showNotify( "SoundCloud URL not streamable", "error", 10)
+              return
+          end
+          -- here we know entry is good, so invoke our post process function and
+          -- give it the data we've fetched
+          cb(entry);
+      end,
+      function( error )
+          print("ERROR with fetching!")
+      end
+    );]]
+	
+	
+	local qa = triviaquestions[math.random(1,#triviaquestions)]
+	question = qa[1]
+	answer = qa[2]
+	
 	winner_found = false;
 
 	net.Start("JB.LR.Trivia.SendQuestion");
@@ -152,7 +117,7 @@ if SERVER then
 			end);
 
 			for k,v in ipairs(JB.LastRequestPlayers)do
-				if IsValid(v) and v ~= ply then
+				if IsValid(v) and v != ply then
 					v:Kill();
 				end
 			end

@@ -42,47 +42,60 @@ end
 
 --[[ PRISONER STATUS ]]
 function pmeta:AddRebelStatus()
-	if self:Team() ~= TEAM_PRISONER or not self:Alive() then
+	if self:Team() != TEAM_PRISONER or not self:Alive() then
 		return
 	end
-
+	
 	self:SetRebel(true);
 
 	JB:BroadcastNotification(self:Nick().." is rebelling!");
 
-	self:SetPlayerColor(Vector(1,0,0));
-	self:SetWeaponColor(Vector(1,0,0));
+	--self:SetPlayerColor(Vector(1,0,0));
+	--self:SetWeaponColor(Vector(1,0,0));
+
+	self:SetColor( Color( 255, 0, 0, 255 ))
+	--self:SetRenderMode( 1 )	
+	--self:SetKeyValue( "renderfx", 24 )
 end
 function pmeta:RemoveRebelStatus()
-	if not self.SetRebel then
+	if self:Team() != TEAM_PRISONER or not self:Alive() then
 		return
 	end
-
+	
 	self:SetRebel(false);
-
-    self:SetPlayerColor(Vector(.9,.9,.9));
-	self:SetWeaponColor(Vector(.9,.9,.9));
+	
+	JB:BroadcastNotification(self:Nick().." has been pardoned!");
+	
+    --self:SetPlayerColor(Vector(.9,.9,.9));
+	--self:SetWeaponColor(Vector(.9,.9,.9));
+	
+	self:SetColor( Color( 255, 255, 255, 255 )) 
+	--self:SetRenderMode( 0 )	
+	--self:SetKeyValue( "renderfx", 0 )
 end
 
 --[[ WARDEN STATUS ]]
 function pmeta:AddWardenStatus()
-	if self:Team() ~= TEAM_GUARD or not self:Alive() or not IsValid(JB.TRANSMITTER) then
+	if self:Team() != TEAM_GUARD or not self:Alive() or not IsValid(JB.TRANSMITTER) then
 		return
 	end
 
-	self:SetModel("models/player/barney.mdl")
-	self:SetArmor(100)
+	-- MTZ swapped models
+	--self:SetModel("models/player/barney.mdl")
+	--self:SetModel("models/dpfilms/metropolice/playermodels/pm_badass_police.mdl")
+	self:SetModel("models/dpfilms/metropolice/playermodels/pm_hd_barney.mdl")
+	self._OldWardenModel = "models/dpfilms/metropolice/playermodels/pm_hd_barney.mdl"
 	JB.TRANSMITTER:SetJBWarden(self);
-
+	
 end
 function pmeta:RemoveWardenStatus()
 	if not self:Alive() and IsValid(JB.TRANSMITTER) then return end
-
+	
 	self:SetModel("models/player/police.mdl")
 	JB.TRANSMITTER:SetJBWarden(NULL);
 end
-function pmeta:SetupHands( ply )
-	if IsValid(ply) and ply ~= self then return end // we don't need in-eye spectator.
+function pmeta:SetupHandsDONOTRUN( ply )
+	if IsValid(ply) and ply != self then return end // we don't need in-eye spectator.
 
 	local oldhands = self:GetHands()
 	if ( IsValid( oldhands ) ) then

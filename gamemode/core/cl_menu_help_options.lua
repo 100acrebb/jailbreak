@@ -32,7 +32,7 @@
 
 
 local color_text = Color(223,223,223,230);
-local matGradient = Material("materials/jailbreak_excl/gradient.png");
+local matGradient = Material("materials/jailbreak_excl/gradient.png"); 
 local frame;
 
 local slide_cur = 1;
@@ -45,10 +45,10 @@ local guide_slides={
 
 function JB.MENU_HELP_OPTIONS()
 	if IsValid(frame) then frame:Remove() end
-
+	
 	frame = vgui.Create("JB.Frame");
 	frame:SetTitle("INFORMATION & OPTIONS");
-
+	
 	frame:SetWide(740);
 
 	local right = frame:Add("JB.Panel");
@@ -61,14 +61,15 @@ function JB.MENU_HELP_OPTIONS()
 
 	left:SetTall(tall); right:SetTall(tall);
 
-
+	
 	left:SetPos(10,40);
 	right:SetPos(left:GetWide() + left.x + 10,40);
 
 	left.Paint = function() end;
-
+	
 	frame:SetTall(math.Round(right:GetTall() + 50))
 
+	/* Set up the menu options */
 	local btn_guide = left:Add("JB.Button");
 	btn_guide:SetSize(left:GetWide(),32);
 	btn_guide:SetText("Guide")
@@ -87,8 +88,9 @@ function JB.MENU_HELP_OPTIONS()
 	btn_credits:SetSize(left:GetWide(),32);
 	btn_credits:SetText("About")
 	btn_credits.y = 120;
+	
 
-
+	/* set up right panel population for each button */
 	btn_guide.OnMouseReleased = function()
 		JB.Util.iterate(right:GetChildren()):Remove();
 
@@ -133,7 +135,7 @@ function JB.MENU_HELP_OPTIONS()
 			slideshow:SetMaterial(guide_slides[slide_cur]);
 		end
 		go_left:SetVisible(false);
-
+		
 	end
 
 
@@ -159,20 +161,20 @@ function JB.MENU_HELP_OPTIONS()
 				return;
 			end
 
-			if logs_old ~= JB.ThisRound.Logs then
+			if logs_old != JB.ThisRound.Logs then
 				hook.Remove("Think","JB.Think._MENU_.CheckChangesToLogs");
 
 				local Panels = {};
 				local pnl;
 				for k,v in ipairs(JB.ThisRound.Logs)do
-					if not pnl or not pnl.subject or pnl.subject ~= v.subject then
+					if not pnl or not pnl.subject or pnl.subject != v.subject then
 						pnl=vgui.Create("EditablePanel");
 						table.insert(Panels,pnl);
 						pnl.Paint = function(self,w,h)
 							draw.RoundedBox(6,0,0,w,h-10,JB.Color["#111"]);
 							draw.RoundedBox(4,1,1,w-2,h-10-2,JB.Color["#333"]);
 							draw.RoundedBox(0,70- (60/2),1,60,h-2-10,JB.Color["#444"])
-						end
+						end					
 						pnl:SetWide(scrollPanel:GetWide());
 						pnl.subject = v.subject;
 					end
@@ -180,12 +182,16 @@ function JB.MENU_HELP_OPTIONS()
 					local textPanel=vgui.Create("Panel",pnl);
 					textPanel:SetWide(pnl:GetWide());
 					textPanel.Paint = function(self,w,h)
+						// time
 						JB.Util.drawSimpleShadowText(v.time,"JBExtraSmall",10,h/2,JB.Color.white,0,1,1);
 
+						// type
 						JB.Util.drawSimpleShadowText(v.kind,"JBExtraSmall",70,h/2,JB.Color.white,1,1,1);
 
+						//message
 						local clr=JB.Color.white
 						local x=70+(60/2)+10;
+						//local w;
 						for _,msg in pairs(v.message)do
 							if type(msg)=="table" and msg.r and msg.g and msg.b then
 								clr = msg;
@@ -223,11 +229,10 @@ function JB.MENU_HELP_OPTIONS()
 		local container=right:Add("Panel");
 		container:SetSize(right:GetWide()-40,right:GetTall()-lbl:GetTall()-lbl.y-40);
 		container:SetPos(20,lbl.y+lbl:GetTall()+20);
-		for k,v in ipairs{
+		for k,v in pairs{
 			{"jb_cl_option_toggleaim","toggle","Toggle aim (default: Right Mouse)"},
 			{"jb_cl_option_togglecrouch","toggle","Toggle crouch (default: CTRL)"},
-			{"jb_cl_option_togglewalk","toggle","Toggle walk (default: ALT)"},
-			{"jb_cl_option_always_spectate","toggle","Always spawn as spectator after joining"}
+			{"jb_cl_option_togglewalk","toggle","Toggle walk (default: ALT)"}
 		} do
 			local fragment=container:Add("Panel");
 			fragment:SetSize(container:GetWide(),32);
@@ -239,28 +244,13 @@ function JB.MENU_HELP_OPTIONS()
 			lbl:SetPos(32,fragment:GetTall()/2-lbl:GetTall()/2);
 			lbl:SetColor(color_text);
 
-			local DermaCheckbox = vgui.Create( "DCheckBox",fragment )
+			local DermaCheckbox = vgui.Create( "DCheckBox",fragment )// Create the checkbox
 			DermaCheckbox:SetPos( fragment:GetTall()/2 - DermaCheckbox:GetWide()/2,   fragment:GetTall()/2 - DermaCheckbox:GetTall()/2)// Set the position
 			DermaCheckbox:SetConVar( v[1] )
 		end
 	end
 	btn_credits.OnMouseReleased = function()
-		local text = [[This is the seventh version of the first Garry's Mod edition of Jail Break.
-It is a complete rewrite and shares no code with previous versions, or any unofficial remake of the gamemode.
-
-Jail Break was created by Casual Bananas, a software development company based in The Netherlands. We do much more than just Garry's Mod gamemodes and addons; check out our website at casualbananas.com to find out more about our company and what services we offer.
-
-
-CREDITS
-: Excl (STEAM_0:0:19441588) - Lead developer in charge of Jail Break since version 1
-
-SPECIAL THANKS
-: Camamoow - Inciting me to make this new version of Jail Break.
-: VTG Community - Bug testing, suggestions and being the first Jail Break 7 server.
-
-
-
-Copyright © Casual Bananas 2014 ]];
+		local text = "Blah blah blah";
 
 		JB.Util.iterate(right:GetChildren()):Remove();
 		JB.Util.iterate{Label("About",right)}:SetPos(20,20):SetFont("JBLarge"):SizeToContents():SetColor(JB.Color.white);
@@ -275,3 +265,4 @@ Copyright © Casual Bananas 2014 ]];
 
 	btn_guide.OnMouseReleased();
 end
+														

@@ -1,34 +1,4 @@
--- ####################################################################################
--- ##                                                                                ##
--- ##                                                                                ##
--- ##     CASUAL BANANAS CONFIDENTIAL                                                ##
--- ##                                                                                ##
--- ##     __________________________                                                 ##
--- ##                                                                                ##
--- ##                                                                                ##
--- ##     Copyright 2014 (c) Casual Bananas                                          ##
--- ##     All Rights Reserved.                                                       ##
--- ##                                                                                ##
--- ##     NOTICE:  All information contained herein is, and remains                  ##
--- ##     the property of Casual Bananas. The intellectual and technical             ##
--- ##     concepts contained herein are proprietary to Casual Bananas and may be     ##
--- ##     covered by U.S. and Foreign Patents, patents in process, and are           ##
--- ##     protected by trade secret or copyright law.                                ##
--- ##     Dissemination of this information or reproduction of this material         ##
--- ##     is strictly forbidden unless prior written permission is obtained          ##
--- ##     from Casual Bananas                                                        ##
--- ##                                                                                ##
--- ##     _________________________                                                  ##
--- ##                                                                                ##
--- ##                                                                                ##
--- ##     Casual Bananas is registered with the "Kamer van Koophandel" (Dutch        ##
--- ##     chamber of commerce) in The Netherlands.                                   ##
--- ##                                                                                ##
--- ##     Company (KVK) number     : 59449837                                        ##
--- ##     Email                    : info@casualbananas.com                          ##
--- ##                                                                                ##
--- ##                                                                                ##
--- ####################################################################################
+
 
 local MODE_NORMAL = 1;
 local MODE_AIM = 2;
@@ -53,11 +23,11 @@ function SWEP:FireCallback()
 	if IsFirstTimePredicted() then
 		local vm = self.Owner:GetViewModel();
 		local muz = vm:GetAttachment("1");
-
+				
 		if not self.Em then
 			self.Em = ParticleEmitter(muz.Pos);
 		end
-
+				
 		local par = self.Em:Add("particle/smokesprites_000" .. math.random(1, 9), muz.Pos);
 		par:SetStartSize(math.random(0.5, 1));
 		par:SetStartAlpha(100);
@@ -70,7 +40,7 @@ function SWEP:FireCallback()
 		par:SetGravity(Vector(0, 0, .5));
 		local mup = (muz.Ang:Up()*-1);
 		par:SetVelocity(Vector(0, 0,7)-Vector(mup.x,mup.y,0));
-
+				
 		local par = self.Em:Add("sprites/heatwave", muz.Pos);
 		par:SetStartSize(4);
 		par:SetEndSize(0);
@@ -84,7 +54,7 @@ end
 function SWEP:AdjustMouseSensitivity()
 	return self:GetNWMode() == MODE_AIM and .5 or 1;
 end
-
+	
 local gap = 5
 local gap2 = 0
 local color_sight = Color(255,255,255,255);
@@ -97,9 +67,9 @@ function SWEP:DrawHUD()
 	dt = FrameTime();
 
 	x, y = ScrW() / 2, ScrH() / 2;
-
+		
 	local scale = (10 * self.Primary.Cone)* (2 - math.Clamp( (CurTime() - self:GetNWLastShoot()) * 5, 0.0, 1.0 ))
-
+	
 	if (self:GetNWMode() == MODE_AIM and not self.FakeIronSights) or self:GetNWMode() == MODE_SPRINT then
 		color_sight.a = math.Approach(color_sight.a, 0, dt / 0.0017)
 	else
@@ -107,7 +77,7 @@ function SWEP:DrawHUD()
 	end
 
 	gap = math.Approach(gap, 50 * ((10 / (self.Owner:GetFOV() / 90)) * self:GetNWLastShoot()), 1.5 + gap * 0.1)
-
+	
 	surface.SetDrawColor(color_sight);
 	surface.SetMaterial(matCrosshair);
 	surface.DrawTexturedRectRotated(x - gap - 14/2,y,32,32,270+180);
@@ -120,13 +90,13 @@ local time,fireTime,targetPos,targetAng,speed,speedReduced;
 local idealPos = Vector(0,0,0);
 function SWEP:GetViewModelPosition( pos, ang )
 	if not IsValid(self.Owner) then return end
-
+	
 	local mode = self:GetNWMode();
 	if mode < 1 or mode > 3 then
 		mode = MODE_NORMAL;
 	end
 
-	time = math.Clamp(FrameTime() * 7,0,1);
+	time = math.Clamp(FrameTime() * 15,0,1);
 
 	idealPos.x = self.Positions[mode].pos.x;
 	idealPos.y = self.Positions[mode].pos.y;
@@ -140,7 +110,7 @@ function SWEP:GetViewModelPosition( pos, ang )
 	self.smPos = LerpVector(time,self.smPos or self.Positions[mode].pos,idealPos);
 	self.smAng = LerpVector(time,self.smAng or self.Positions[mode].ang,self.Positions[mode].ang);
 
-	if !self.lastMode or mode ~= self.lastMode then
+	if !self.lastMode or mode != self.lastMode then
 		self.lastMode = mode;
 
 		if mode == MODE_AIM then
@@ -168,7 +138,7 @@ function SWEP:GetViewModelPosition( pos, ang )
 	elseif mode == MODE_SPRINT then
 		speed = self.Owner:GetVelocity():Length();
 		local clamp = math.Clamp((4 + speed / 100) / (self.Owner:Crouching() and 1.5 or 1), 0, 7)
-
+			
 		local co = math.cos(CurTime() * clamp);
 		local si = math.sin(CurTime() * clamp);
 		local ta = math.atan(co, si)
@@ -195,7 +165,7 @@ end
 
 
 local lp,wep;
-hook.Add("HUDPaint","drawHitMarkers",function()
+hook.Add("HUDPaint","drawHitMarkers",function() 
 	lp=LocalPlayer();
 	if IsValid(lp) then
 		wep = lp:GetActiveWeapon();

@@ -30,41 +30,52 @@
 -- ##                                                                                ##
 -- ####################################################################################
 
+AddCSLuaFile()
 
--- Now with workshop support :)
---resource.AddWorkshop("389805614");
+--if (CLIENT) then
+	--scopeTex = surface.GetTextureID("scope/scope_normal")
+--end
 
--- If the workshop fails, the files below will be downloaded from the server :)
-resource.AddFile("materials/jailbreak_excl/notify_bracket.png");
-resource.AddFile("materials/jailbreak_excl/hud_health.png");
-resource.AddFile("materials/jailbreak_excl/hud_health_bottom.png");
-resource.AddFile("materials/jailbreak_excl/hud_warden_bar.png");
-resource.AddFile("materials/jailbreak_excl/hud_time.png");
-resource.AddFile("materials/jailbreak_excl/scoreboard_edge.png");
-resource.AddFile("materials/jailbreak_excl/scoreboard_middle.png");
-resource.AddFile("materials/jailbreak_excl/scoreboard_avatar.png");
-resource.AddFile("materials/jailbreak_excl/weapon_selection_tile.png");
-resource.AddFile("materials/jailbreak_excl/button_edge.png");
-resource.AddFile("materials/jailbreak_excl/button_middle.png");
-resource.AddFile("materials/jailbreak_excl/crosshair.png");
-resource.AddFile("materials/jailbreak_excl/gradient.png");
-resource.AddFile("materials/jailbreak_excl/lastrequest.png");
-resource.AddFile("materials/jailbreak_excl/logo_guard.png")
-resource.AddFile("materials/jailbreak_excl/logo_prisoner.png");
-resource.AddFile("materials/jailbreak_excl/scope.png");
-resource.AddFile("materials/jailbreak_excl/notify_quick_edge.png");
-resource.AddFile("materials/jailbreak_excl/notify_quick_middle.png");
-resource.AddFile("materials/jailbreak_excl/vgui_close.png");
-resource.AddFile("materials/jailbreak_excl/vgui_close_hover.png");
+SWEP.PrintName			= "M3 Pump Shotgun"	
 
-resource.AddFile("materials/jailbreak_excl/guide/slide_1.png");
-resource.AddFile("materials/jailbreak_excl/guide/slide_2.png");
-resource.AddFile("materials/jailbreak_excl/guide/slide_3.png");
-resource.AddFile("materials/jailbreak_excl/guide/slide_4.png");
+SWEP.Slot				= 1
+SWEP.SlotPos			= 1
+SWEP.HoldType			= "shotgun"
+SWEP.Base				= "weapon_jb_base"
+SWEP.Category			= "Jailbreak Weapons"
 
-resource.AddFile("materials/jailbreak_excl/pointers/pointer_background.png");
-resource.AddFile("materials/jailbreak_excl/pointers/generic.png")
-resource.AddFile("materials/jailbreak_excl/pointers/exclamation.png")
-resource.AddFile("materials/jailbreak_excl/pointers/question.png")
-resource.AddFile("materials/jailbreak_excl/pointers/line.png")
-resource.AddFile("materials/jailbreak_excl/pointers/cross.png")
+SWEP.Spawnable			= true
+SWEP.AdminSpawnable		= true
+
+SWEP.ViewModel			= "models/weapons/cstrike/c_shot_m3super90.mdl"
+SWEP.WorldModel			= "models/weapons/w_shot_m3super90.mdl"
+
+SWEP.Weight				= 5
+SWEP.AutoSwitchTo		= true
+SWEP.AutoSwitchFrom		= false
+
+SWEP.Primary.Sound			= Sound("Weapon_M3.Single" )
+SWEP.Primary.Recoil			= 5
+SWEP.Primary.Damage			= 15
+SWEP.Primary.NumShots		= 8
+SWEP.Primary.Cone			= 0.1
+SWEP.Primary.ClipSize		= 8
+SWEP.Primary.Delay			= 0.95
+SWEP.Primary.DefaultClip	= 16
+SWEP.Primary.Automatic		= false
+SWEP.Primary.Ammo			= "buckshot"
+
+SWEP.Secondary.Automatic	= false
+SWEP.Secondary.ClipSize		= -1
+SWEP.Secondary.DefaultClip	= -1
+
+SWEP.Positions = {};
+--SWEP.Positions[1] = {pos = Vector(-2.08, -2.757, 2), ang = Vector(0,0,0)};
+--SWEP.Positions[2] = {pos = Vector(-5.361, -2.757, 1.879), ang = Vector(1.2, 0, 0)};
+--SWEP.Positions[3] = {pos = Vector(6.377, -13.938, 0.393), ang = Vector(0,70,0)};
+SWEP.Positions[1] = {pos = Vector(-2.08, -2.757, 2), ang = Vector(0,0,0)};
+SWEP.Positions[2] = {pos = Vector(-5.361, -2.757, 1.879), ang = Vector(1.2, 0, 0)};
+SWEP.Positions[3] = {pos = Vector(6.377, -13.938, 0.393), ang = Vector(0,70,0)};  -- RUN
+
+--SWEP.IronSightsPos 		= Vector( -15.19, 2.5, 6 );
+--SWEP.IronSightsAng = Vector(-1, 0, 0);
