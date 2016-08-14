@@ -45,8 +45,12 @@ function JB:MakeChoppaAndJeep()
 	car1:Activate()
 		
 		
-
-		
+	if (timer.Exists("Photon.RunScan")) then
+		timer.Remove("Photon.RunScan")
+		timer.Create("Photon.RunScan", 1.0, 0, function()
+			Photon:RunningScan()
+		end)	
+	end
 
 end
 

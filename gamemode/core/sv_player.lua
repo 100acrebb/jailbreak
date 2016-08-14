@@ -126,7 +126,9 @@ JB.Gamemode.PlayerDeath = function(gm, victim, weapon, killer)
 		if not victim:GetRebel() then
 			killer.PrisonerKills = killer.PrisonerKills + 1
 			if killer.PrisonerKills >= 3 then
-				JB:BroadcastNotification(killer:Nick().." appears to be RDMing!");
+				print(killer:Nick().." appears to be RDMing!")
+				JB:BroadcastNotification(killer:Nick().." appears to be RDMing!")
+				ServerLog( killer:Nick().." appears to be RDMing!\n")
 			end
 		end
 	end

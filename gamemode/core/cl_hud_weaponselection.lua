@@ -1,35 +1,3 @@
--- ####################################################################################
--- ##                                                                                ##
--- ##                                                                                ##
--- ##     CASUAL BANANAS CONFIDENTIAL                                                ##
--- ##                                                                                ##
--- ##     __________________________                                                 ##
--- ##                                                                                ##
--- ##                                                                                ##
--- ##     Copyright 2014 (c) Casual Bananas                                          ##
--- ##     All Rights Reserved.                                                       ##
--- ##                                                                                ##
--- ##     NOTICE:  All information contained herein is, and remains                  ##
--- ##     the property of Casual Bananas. The intellectual and technical             ##
--- ##     concepts contained herein are proprietary to Casual Bananas and may be     ##
--- ##     covered by U.S. and Foreign Patents, patents in process, and are           ##
--- ##     protected by trade secret or copyright law.                                ##
--- ##     Dissemination of this information or reproduction of this material         ##
--- ##     is strictly forbidden unless prior written permission is obtained          ##
--- ##     from Casual Bananas                                                        ##
--- ##                                                                                ##
--- ##     _________________________                                                  ##
--- ##                                                                                ##
--- ##                                                                                ##
--- ##     Casual Bananas is registered with the "Kamer van Koophandel" (Dutch        ##
--- ##     chamber of commerce) in The Netherlands.                                   ##
--- ##                                                                                ##
--- ##     Company (KVK) number     : 59449837                                        ##
--- ##     Email                    : info@casualbananas.com                          ##
--- ##                                                                                ##
--- ##                                                                                ##
--- ####################################################################################
-
 
 
 local selectedTab = 0;
@@ -40,18 +8,18 @@ local function ArrangeSlots()
 	slots = {};
 	c = 0;
 	for k,v in pairs(LocalPlayer():GetWeapons())do
-		--print(v:GetClass())
+		--print(v:GetClass(), v.Slot)
 		if v.Slot then
 			if not slots[v.Slot+1] then
 				slots[v.Slot+1] = {}
 			end
 			slots[v.Slot+1][#slots[v.Slot+1]+1] = v;
-			if v.Slot == 3 then
+			if v.Slot == 5 then
 				c = c+1;
 			end
 		end
 	end
-	if selectedTab == 4 then
+	if selectedTab == 6 then
 		slotPos = (((slotPos-1)%c)+1);
 	else
 		slotPos = 1;
@@ -67,7 +35,7 @@ surface.CreateFont("JBWeaponSelectionFontBlur",{
 	size = 28,
 	blursize = 2
 })
-local tabX = {-256,-256,-256,-256};
+local tabX = {-256,-256,-256,-256, -256, -256};
 local matTile = Material("materials/jailbreak_excl/weapon_selection_tile.png");
 local mul;
 hook.Add("Think","JB.Think.WeaponSelection.Animate",function()
@@ -77,19 +45,21 @@ hook.Add("Think","JB.Think.WeaponSelection.Animate",function()
 		tabX[2] = math.Clamp(Lerp(0.18 * mul,tabX[2],1),-256,0);
 		tabX[3] = math.Clamp(Lerp(0.16 * mul,tabX[3],1),-256,0);
 		tabX[4] = math.Clamp(Lerp(0.14 * mul,tabX[4],1),-256,0);
-		--tabX[5] = math.Clamp(Lerp(0.14 * mul,tabX[5],1),-256,0);
+		tabX[5] = math.Clamp(Lerp(0.12 * mul,tabX[5],1),-256,0);
+		tabX[6] = math.Clamp(Lerp(0.10 * mul,tabX[6],1),-256,0);
 	else 
 		mul=FrameTime()*40;
 		tabX[1] = math.Clamp(Lerp(0.40 * mul,tabX[1],-256),-256,0);
 		tabX[2] = math.Clamp(Lerp(0.39 * mul,tabX[2],-256),-256,0);
 		tabX[3] = math.Clamp(Lerp(0.38 * mul,tabX[3],-256),-256,0);
 		tabX[4] = math.Clamp(Lerp(0.37 * mul,tabX[4],-256),-256,0);
-		--tabX[5] = math.Clamp(Lerp(0.37 * mul,tabX[5],-256),-256,0);
+		tabX[5] = math.Clamp(Lerp(0.36 * mul,tabX[5],-256),-256,0);
+		tabX[6] = math.Clamp(Lerp(0.35 * mul,tabX[6],-256),-256,0);
 	end
 end);
 hook.Add("HUDPaint","JB.HUDPaint.WeaponSelection",function()
 	if tabX[1] >= -256 and LocalPlayer():Alive() and LocalPlayer():Team() <= TEAM_GUARD then
-		for i=1,4 do
+		for i=1,6 do
 			local y = 250 + ((i-1) * 54);
 			local x = math.Round(tabX[i]);
 		
@@ -102,7 +72,7 @@ hook.Add("HUDPaint","JB.HUDPaint.WeaponSelection",function()
 				draw.SimpleText(slots[i][1].PrintName or "Invalid","JBWeaponSelectionFont",x + 210,y+(64-40)/2+40/2, selectedTab == i and JB.Color.white or JB.Color["#888"],2,1)
 			end
 
-			draw.SimpleText(i == 1 and "UNARMED" or i == 2 and "PRIMARY" or i == 3 and "SECONDARY" or i == 4 and "OTHER","JBNormal",x + 4,y+(64-40)/2+3,Color(255,255,255,2));
+			draw.SimpleText(i == 1 and "UNARMED" or i == 2 and "PRIMARY" or i == 3 and "SECONDARY" or i == 4 and "OTHER" or i == 5 and "OTHER2" or i == 6 and "OTHER3","JBNormal",x + 4,y+(64-40)/2+3,Color(255,255,255,2));
 		end
 	end
 end)
@@ -121,7 +91,7 @@ hook.Add("PlayerBindPress","JB.PlayerBindPress.WeaponSelection", function(p, bin
 	if string.find(bind, "invnext") then
 		if LocalPlayer():Team() > TEAM_GUARD or !LocalPlayer():Alive() then return true  end
 		nScroll = nScroll + 1;
-		if nScroll > 4 then
+		if nScroll > 6 then
 			nScroll = 1;
 		end
 
@@ -137,7 +107,7 @@ hook.Add("PlayerBindPress","JB.PlayerBindPress.WeaponSelection", function(p, bin
 
 		nScroll = nScroll-1;
 		if nScroll < 1 then
-			nScroll = 4;
+			nScroll = 6;
 		end
 
 		if selectedTab ~= nScroll then
@@ -195,10 +165,26 @@ hook.Add("PlayerBindPress","JB.PlayerBindPress.WeaponSelection", function(p, bin
 		ArrangeSlots();
 		return true
 	elseif string.find(bind, "slot5") then 
-		selectedTab = 0;
+		if LocalPlayer():Team() > TEAM_GUARD or !LocalPlayer():Alive() then return true  end
+		if selectedTab ~= 5 then
+			surface.PlaySound("common/wpn_moveselect.wav");
+		else
+			selectedTab = 0;
+			return true;
+		end
+		selectedTab = 5;
+		ArrangeSlots();
 		return true
 	elseif string.find(bind, "slot6") then 
-		selectedTab = 0;
+		if LocalPlayer():Team() > TEAM_GUARD or !LocalPlayer():Alive() then return true  end
+		if selectedTab ~= 6 then
+			surface.PlaySound("common/wpn_moveselect.wav");
+		else
+			selectedTab = 0;
+			return true;
+		end
+		selectedTab = 6;
+		ArrangeSlots();
 		return true
 	elseif string.find(bind, "slot7") then 
 		selectedTab = 0;
